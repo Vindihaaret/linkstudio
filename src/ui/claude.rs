@@ -119,9 +119,19 @@ pub fn register(application: &adw::Application) {
     }
 }
 
-/// The command that registers Link Studio with Claude Code.
+/// The command that registers Link Studio with Claude Code. Claude Code
+/// inherits PATH, so the bare name is used when it finds this program.
 fn claude_code_command() -> String {
-    format!("claude mcp add --scope user linkstudio -- {} mcp", executable())
+    format!("claude mcp add --scope user linkstudio -- {} mcp", command_name())
+}
+
+fn command_name() -> String {
+    let here = std::env::current_exe().ok().and_then(|p| p.canonicalize().ok());
+    let on_path = glib::find_program_in_path("linkstudio").and_then(|p| p.canonicalize().ok());
+    match (here, on_path) {
+        (Some(here), Some(on_path)) if here == on_path => "linkstudio".into(),
+        _ => executable(),
+    }
 }
 
 fn claude_desktop_config() -> String {
@@ -698,7 +708,8 @@ impl App {
         let prefs = dialog.clone();
         add.connect_clicked(move |button| {
             button.set_sensitive(false);
-            let argv = ["claude", "mcp", "add", "--scope", "user", "linkstudio", "--", &executable(), "mcp"];
+            let program = command_name();
+            let argv = ["claude", "mcp", "add", "--scope", "user", "linkstudio", "--", &program, "mcp"];
             let argv: Vec<&std::ffi::OsStr> = argv.iter().map(|a| a.as_ref()).collect();
             let flags = gio::SubprocessFlags::STDOUT_PIPE | gio::SubprocessFlags::STDERR_MERGE;
             let Ok(process) = gio::Subprocess::newv(&argv, flags) else {

@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 description = "Control panel for the Insta360 Link webcam on Linux"
 license = "GPL-3.0-or-later"
+authors = ["Jan Ivar Sørensen"]
+repository = "https://github.com/Vindihaaret/linkstudio"
+readme = "README.md"
+keywords = ["insta360", "webcam", "gtk4", "libadwaita", "mcp"]
+rust-version = "1.88"
 
 [dependencies]
 gtk = { package = "gtk4", version = "0.9", features = ["v4_14"] }

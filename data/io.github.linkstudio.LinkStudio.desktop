@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Link Studio
+GenericName=Webcam Controls
+GenericName[nb]=Webkamerakontroll
+Comment=Control the Insta360 Link: image, gimbal, AI tracking and profiles
+Comment[nb]=Styr Insta360 Link: bilde, gimbal, AI-sporing og profiler
+Exec=linkstudio
+Icon=io.github.linkstudio.LinkStudio
+Terminal=false
+Categories=AudioVideo;Video;Settings;HardwareSettings;GTK;
+Keywords=insta360;webcam;camera;gimbal;tracking;
+Keywords[nb]=insta360;webkamera;kamera;gimbal;sporing;webcam;
+StartupNotify=true

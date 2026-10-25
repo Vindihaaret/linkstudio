@@ -1,0 +1,21 @@
+[package]
+name = "linkstudio"
+version = "0.1.0"
+edition = "2021"
+description = "Control panel for the Insta360 Link webcam on Linux"
+license = "GPL-3.0-or-later"
+
+[dependencies]
+gtk = { package = "gtk4", version = "0.9", features = ["v4_14"] }
+adw = { package = "libadwaita", version = "0.7", features = ["v1_5"] }
+async-channel = "2"
+ksni = { version = "0.3", default-features = false, features = ["blocking", "async-io"] }
+libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+zune-core = "0.4"
+zune-jpeg = "0.4"
+
+[profile.release]
+lto = "thin"
+strip = true

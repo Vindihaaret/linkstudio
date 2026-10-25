@@ -47,6 +47,15 @@ pub struct Config {
     pub virtual_camera: bool,
     pub virtual_camera_height: u32,
     pub appearance: Appearance,
+    /// Let Claude (through `linkstudio mcp`) read and change camera settings.
+    /// Off until the user turns it on.
+    pub claude_control: bool,
+    /// Let Claude take pictures through the camera. Off until the user turns it on.
+    pub claude_camera_view: bool,
+    /// Privacy mode survives restarts, so the camera is never silently pointed
+    /// back at the room. Holds where to return to (pan, tilt, zoom).
+    pub privacy: bool,
+    pub privacy_restore: Option<(i32, i32, i32)>,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -72,6 +81,10 @@ impl Default for Config {
             appearance: Appearance::System,
             virtual_camera: false,
             virtual_camera_height: 1080,
+            claude_control: false,
+            claude_camera_view: false,
+            privacy: false,
+            privacy_restore: None,
         }
     }
 }

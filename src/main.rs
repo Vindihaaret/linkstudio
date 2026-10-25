@@ -1,6 +1,7 @@
 mod camera;
 mod config;
 mod i18n;
+mod mcp;
 mod preview;
 mod tray;
 mod ui;
@@ -13,6 +14,9 @@ use gtk::{gio, glib};
 pub const APP_ID: &str = "io.github.linkstudio.LinkStudio";
 
 fn main() -> glib::ExitCode {
+    if std::env::args().nth(1).as_deref() == Some("mcp") {
+        return mcp::run();
+    }
     let config = config::Config::load();
     if let Some(lang) = &config.language {
         // Also covers strings from GTK and libadwaita themselves, which read
@@ -28,6 +32,7 @@ fn main() -> glib::ExitCode {
         ui::load_css();
         ui::apply_appearance(config.appearance);
         ui::start_tray(app);
+        ui::register_claude(app);
 
         let quit = gio::ActionEntry::builder("quit").activate(|app: &adw::Application, _, _| app.quit()).build();
         app.add_action_entries([quit]);

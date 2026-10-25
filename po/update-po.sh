@@ -11,7 +11,7 @@ cd "$(dirname "$0")/.."
 xgettext --language=C --from-code=UTF-8 --add-comments=Translators \
     --keyword=tr --keyword=trf --keyword=n_ \
     --package-name="Link Studio" --output=po/linkstudio.pot \
-    src/*.rs 2>&1 | grep -v "unterminated" >&2 || true
+    $(find src -name '*.rs' | sort) 2>&1 | grep -v "unterminated" >&2 || true
 
 for po in po/*.po; do
     [ -e "$po" ] || continue

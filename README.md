@@ -14,6 +14,8 @@ and libadwaita. Works on GNOME and KDE.
 - Virtual camera "Link Studio Camera" (Effects tab) for Teams, Zoom, OBS and
   browsers, so the preview and a meeting can use the camera at the same time
 - Status icon with quick access to the virtual camera and AI tracking
+- **Claude integration (MCP)**, off by default: let Claude tune the picture
+  and framing for you – optionally looking through the camera
 
 On KDE Plasma the app keeps its libadwaita (GNOME) look and its own title
 bar; light/dark and the accent color are taken from Plasma through the
@@ -42,6 +44,70 @@ Link Studio shows a status icon (StatusNotifierItem) with Show, Virtual
 camera, AI tracking and Quit. KDE Plasma shows it out of the box; GNOME needs
 the [AppIndicator extension](https://extensions.gnome.org/extension/615/appindicator-support/).
 
+## Claude integration (MCP)
+
+Link Studio includes an [MCP](https://modelcontextprotocol.io) server, so
+Claude (in Claude Code or Claude Desktop) can work with your camera: read and
+change image settings, point the gimbal, turn AI tracking on or off, and save
+positions and profiles. If you also let it see through the camera, it can take
+a picture, judge lighting and framing, adjust, and check again – like a
+photographer getting you ready for a meeting.
+
+**Everything is off until you turn it on**, in Link Studio → Preferences →
+Claude, and can be turned off again at any time:
+
+- **Allow control from Claude** – settings, gimbal, AI tracking, positions,
+  profiles and the virtual camera.
+- **Allow Claude to see through the camera** – a separate permission for
+  pictures.
+
+### Privacy
+
+- Pictures Claude takes are sent to Anthropic to be analyzed, the same as an
+  image you paste into a chat. Only turn on "see through the camera" if you are
+  comfortable with that.
+- Every picture shows a **"Claude is looking"** badge in the preview and a
+  notice (a desktop notification while the window is hidden). Every change
+  Claude makes shows a notice too.
+- **Privacy mode always wins:** while it is on, Claude can neither see through
+  nor move the camera. Claude can turn privacy mode on, but only you can turn it
+  off. Privacy mode is remembered across restarts.
+- These rules are enforced by Link Studio itself, not by Claude or the MCP
+  process, so they apply however Claude connects. Pictures are never stored by
+  Link Studio.
+
+### Connecting
+
+Click **Add** under Preferences → Claude, or run:
+
+```sh
+claude mcp add --scope user linkstudio -- linkstudio mcp
+```
+
+For Claude Desktop, add this to `claude_desktop_config.json` (use the full
+path if `~/.local/bin` is not on Claude Desktop's PATH):
+
+```json
+{ "mcpServers": { "linkstudio": { "command": "linkstudio", "args": ["mcp"] } } }
+```
+
+Start a new Claude session and ask, for example:
+
+- "Make me look good for my meeting."
+- "Is anything off with my camera picture?" – backlight, framing, clutter.
+- "Save a position that shows the whiteboard."
+- "Make a warmer profile for evening calls and use it automatically."
+
+If Link Studio is not running, `linkstudio mcp` starts it, so you always see
+what Claude is doing. The camera sleeps (gimbal parked) when nothing streams;
+Link Studio wakes it for Claude and lets it sleep again 10 seconds after
+Claude's last request.
+
+Tools: `get_status`, `take_snapshot`, `set_image_settings`,
+`reset_image_settings`, `move_gimbal`, `center_gimbal`, `set_tracking`,
+`goto_position`, `save_position`, `save_profile`, `apply_profile`,
+`set_virtual_camera`, `set_privacy`.
+
 ## Install / uninstall
 
 Needs `cargo`, `gtk4-devel` and `libadwaita-devel` (openSUSE package names).
@@ -52,7 +118,8 @@ Needs `cargo`, `gtk4-devel` and `libadwaita-devel` (openSUSE package names).
 ./uninstall.sh --purge   # also removes ~/.config/linkstudio
 ```
 
-The app can also uninstall itself from its main menu.
+The app can also uninstall itself from its main menu; that also removes the
+Claude Code registration (`claude mcp remove linkstudio`).
 
 ## Translations
 

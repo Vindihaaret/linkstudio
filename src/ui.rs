@@ -18,6 +18,10 @@ use crate::preview::{self, Event, Frame, Preview};
 use crate::{tray, vcam};
 use crate::APP_ID;
 
+pub mod claude;
+
+pub use claude::{register as register_claude, unregister_from_claude_code};
+
 const REFRESH_INTERVAL: Duration = Duration::from_millis(1000);
 const NUDGE_INTERVAL: Duration = Duration::from_millis(90);
 const ARCSEC_PER_DEGREE: i32 = 3600;
@@ -50,6 +54,7 @@ const CSS: &str = r#"
   background-color: alpha(@accent_bg_color, 0.92);
 }
 .badge.virtual { background-color: alpha(@success_bg_color, 0.92); }
+.badge.claude { background-color: #d97757; }
 .badge.privacy { background-color: alpha(@warning_bg_color, 0.95); color: @warning_fg_color; }
 .ptz-pad button { min-width: 46px; min-height: 46px; }
 .control-card { padding: 14px 18px; }
@@ -229,6 +234,22 @@ fn position_summary(p: &Position) -> String {
     trf("Pan {}° · Tilt {}° · Zoom {}×", &[&degrees(p.pan), &degrees(p.tilt), &zoom_factor(p.zoom)])
 }
 
+/// The value "reset" puts a control back to. Automatic modes are turned on
+/// even where the driver's default is off (the Link reports autofocus off),
+/// and a menu default that is not one of its options is skipped.
+fn reset_value(info: &CtrlInfo) -> Option<i32> {
+    match info.id {
+        cid::FOCUS_AUTO | cid::AUTO_WHITE_BALANCE => return Some(1),
+        // Aperture priority is the automatic exposure mode on UVC cameras.
+        cid::EXPOSURE_AUTO => return Some(3),
+        _ => {}
+    }
+    match &info.kind {
+        CtrlKind::Menu(items) => items.iter().any(|(v, _)| *v == info.default).then_some(info.default),
+        _ => Some(info.default),
+    }
+}
+
 fn parse_id(key: &str) -> Option<u32> {
     u32::from_str_radix(key.trim_start_matches("0x"), 16).ok()
 }
@@ -327,6 +348,17 @@ pub struct App {
     stream_live: Cell<bool>,
     virtual_rows: RefCell<Option<VirtualCameraRows>>,
     quality_row: RefCell<Option<adw::ComboRow>>,
+    /// Snapshot requests from Claude waiting for a frame.
+    claude_pending: RefCell<Vec<(u64, claude::Reply)>>,
+    claude_next_id: Cell<u64>,
+    snapshot_request: Arc<AtomicBool>,
+    /// The running stream was started only to take a picture for Claude.
+    claude_stream: Cell<bool>,
+    claude_badge: gtk::Label,
+    claude_badge_timeout: RefCell<Option<glib::SourceId>>,
+    /// Claude actions waiting for the camera to wake up.
+    claude_after_wake: RefCell<Vec<claude::WakeAction>>,
+    claude_idle: RefCell<Option<glib::SourceId>>,
     /// Last state pushed to the status icon, to avoid needless D-Bus updates.
     tray_state: Cell<Option<tray::State>>,
     bound: RefCell<Vec<Bound>>,
@@ -433,6 +465,12 @@ impl App {
             .visible(false)
             .css_classes(["badge", "virtual"])
             .build();
+        let claude_badge = gtk::Label::builder()
+            .label(tr("Claude is looking"))
+            .visible(false)
+            .css_classes(["badge", "claude"])
+            .build();
+        badges.append(&claude_badge);
         badges.append(&virtual_badge);
         badges.append(&tracking_badge);
         badges.append(&privacy_badge);
@@ -686,6 +724,14 @@ impl App {
             stream_live: Cell::new(false),
             virtual_rows: RefCell::new(None),
             quality_row: RefCell::new(None),
+            claude_pending: RefCell::new(Vec::new()),
+            claude_next_id: Cell::new(0),
+            snapshot_request: Arc::new(AtomicBool::new(false)),
+            claude_stream: Cell::new(false),
+            claude_badge,
+            claude_badge_timeout: RefCell::new(None),
+            claude_after_wake: RefCell::new(Vec::new()),
+            claude_idle: RefCell::new(None),
             tray_state: Cell::new(None),
             bound: RefCell::new(Vec::new()),
             exposure: RefCell::new(None),
@@ -739,8 +785,11 @@ impl App {
         let weak = Rc::downgrade(self);
         glib::timeout_add_local_once(Duration::from_secs(5), move || {
             let Some(app) = weak.upgrade() else { return };
-            if page.as_deref() == Some("preferences") {
-                app.show_preferences();
+            if let Some(prefs_page) = page.as_deref().and_then(|p| p.strip_prefix("preferences")) {
+                let dialog = app.show_preferences();
+                if let Some(name) = prefs_page.strip_prefix('-') {
+                    dialog.set_visible_page_name(name);
+                }
             } else if let Some(page) = page {
                 if let Some(stack) = app.sidebar.content().and_downcast::<adw::ViewStack>() {
                     stack.set_visible_child_name(&page);
@@ -1072,6 +1121,7 @@ impl App {
         *self.camera.borrow_mut() = Some(cam.clone());
         self.build_sidebar(&cam);
         self.set_connected_ui(true);
+        self.restore_privacy(&cam);
 
         // Start the stream before the startup profile, so tracking in the
         // profile can wait for the camera to wake up.
@@ -1422,7 +1472,9 @@ impl App {
             for bound in self.bound.borrow().iter() {
                 let info = bound.info();
                 if (info.kind == CtrlKind::Integer) == pass_integers {
-                    let _ = cam.set(info.id, info.default);
+                    if let Some(value) = reset_value(info) {
+                        let _ = cam.set(info.id, value);
+                    }
                 }
             }
         }
@@ -1925,7 +1977,8 @@ impl App {
         if let (Some(group), true) = (profile.group_tracking, cam.can_set_group_tracking()) {
             let _ = cam.set_group_tracking(group);
         }
-        if let Some(tracking) = profile.tracking {
+        // Turning tracking on would end privacy mode; a profile must not do that.
+        if let Some(tracking) = profile.tracking.filter(|on| !(*on && self.privacy.is_active())) {
             self.set_tracking(tracking);
         }
         self.refresh(&cam);
@@ -2053,10 +2106,11 @@ impl App {
         if self.privacy.is_active() {
             self.leave_privacy();
         }
-        if cam.reset_gimbal().is_err() {
-            let _ = cam.set(cid::PAN_ABSOLUTE, 0);
-            let _ = cam.set(cid::TILT_ABSOLUTE, 0);
-        }
+        // The vendor reset is not obeyed from every position (for example
+        // after privacy mode), so set pan and tilt as well.
+        let _ = cam.reset_gimbal();
+        let _ = cam.set(cid::PAN_ABSOLUTE, 0);
+        let _ = cam.set(cid::TILT_ABSOLUTE, 0);
     }
 
     fn set_tracking(self: &Rc<Self>, on: bool) {
@@ -2121,15 +2175,43 @@ impl App {
             if self.tracking_on.get() && cam.set_tracking(false).is_ok() {
                 self.tracking_on.set(false);
             }
-            let _ = cam.set(cid::ZOOM_ABSOLUTE, 100);
-            let _ = cam.set(cid::PAN_ABSOLUTE, 0);
-            let _ = cam.set(cid::TILT_ABSOLUTE, self.tilt_range.get().0);
+            self.point_down(&cam);
         } else if let Some((pan, tilt, zoom)) = self.privacy_restore.take() {
             let _ = cam.set(cid::PAN_ABSOLUTE, pan);
             let _ = cam.set(cid::TILT_ABSOLUTE, tilt);
             let _ = cam.set(cid::ZOOM_ABSOLUTE, zoom);
         }
+        self.save_privacy();
         self.refresh(&cam);
+    }
+
+    fn point_down(&self, cam: &Camera) {
+        let _ = cam.set(cid::ZOOM_ABSOLUTE, 100);
+        let _ = cam.set(cid::PAN_ABSOLUTE, 0);
+        let _ = cam.set(cid::TILT_ABSOLUTE, self.tilt_range.get().0);
+    }
+
+    fn save_privacy(&self) {
+        let mut config = self.config.borrow_mut();
+        config.privacy = self.privacy.is_active();
+        config.privacy_restore = self.privacy_restore.get();
+        config.save();
+    }
+
+    /// Puts privacy mode back on after a restart or reconnect.
+    fn restore_privacy(&self, cam: &Camera) {
+        let (on, restore) = {
+            let config = self.config.borrow();
+            (config.privacy, config.privacy_restore)
+        };
+        if !on {
+            return;
+        }
+        self.privacy_restore.set(restore);
+        self.updating.set(true);
+        self.privacy.set_active(true);
+        self.updating.set(false);
+        self.point_down(cam);
     }
 
     /// Ends privacy mode without moving back, for actions that move the camera anyway.
@@ -2138,6 +2220,7 @@ impl App {
         self.updating.set(true);
         self.privacy.set_active(false);
         self.updating.set(false);
+        self.save_privacy();
     }
 
     // ----- Saved positions -----
@@ -2330,6 +2413,7 @@ impl App {
             mirror: self.mirror.clone(),
             show: self.show_preview.clone(),
             virtual_camera,
+            snapshot: self.snapshot_request.clone(),
         };
         *self.preview.borrow_mut() = Some(Preview::start(options, tx));
         self.picture.set_paintable(None::<&gdk::Paintable>);
@@ -2341,6 +2425,7 @@ impl App {
                 let Some(app) = weak.upgrade() else { break };
                 match event {
                     Event::Started => app.stream_started(),
+                    Event::Snapshot { jpeg, width, height } => app.claude_snapshot_ready(jpeg, width, height),
                     Event::Frame(frame) => app.show_frame(frame),
                     Event::Error(message) => app.preview_failed(&message),
                     Event::VirtualCameraError(message) => {
@@ -2415,6 +2500,7 @@ impl App {
     /// the previous stream stopped. This also runs when no preview is shown.
     fn stream_started(self: &Rc<Self>) {
         self.stream_live.set(true);
+        self.claude_stream_started();
         if !self.resume_tracking.take() {
             return;
         }
@@ -2518,7 +2604,7 @@ impl App {
         about.present(Some(&self.window));
     }
 
-    fn show_preferences(self: &Rc<Self>) {
+    fn show_preferences(self: &Rc<Self>) -> adw::PreferencesDialog {
         let dialog = adw::PreferencesDialog::new();
         let page = adw::PreferencesPage::builder()
             .title(tr("General"))
@@ -2555,6 +2641,7 @@ impl App {
         language_group.add(&language);
         page.add(&language_group);
         dialog.add(&page);
+        dialog.add(&self.claude_preferences_page(&dialog));
 
         let weak = Rc::downgrade(self);
         style.connect_selected_notify(move |row| {
@@ -2579,6 +2666,7 @@ impl App {
             app.rebuild_window();
         });
         dialog.present(Some(&self.window));
+        dialog
     }
 
     /// Recreates the window so every label picks up a new language.
@@ -2651,6 +2739,7 @@ impl App {
     }
 
     fn finish_uninstall(self: &Rc<Self>, purge: bool) {
+        unregister_from_claude_code();
         if let Err(err) = crate::uninstall::uninstall(purge) {
             self.toast(&trf("Uninstalling failed: {}", &[&err]));
             return;

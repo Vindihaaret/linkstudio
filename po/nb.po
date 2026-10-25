@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Link Studio\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 17:40+0100\n"
+"POT-Creation-Date: 2026-10-25 18:09+0100\n"
 "PO-Revision-Date: 2026-10-25 15:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian Bokmål\n"
@@ -12,11 +12,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/config.rs:137
+#: src/config.rs:150
 msgid "Position"
 msgstr "Posisjon"
 
-#: src/preview.rs:153
+#: src/preview.rs:160
 msgid ""
 "The camera is being used by another program. Close it, or try again when it "
 "is done."
@@ -24,15 +24,15 @@ msgstr ""
 "Kameraet brukes av et annet program. Lukk det, eller prøv igjen når det er "
 "ferdig."
 
-#: src/preview.rs:155
+#: src/preview.rs:162
 msgid "The camera was disconnected."
 msgstr "Kameraet ble koblet fra."
 
-#: src/preview.rs:156
+#: src/preview.rs:163
 msgid "The preview stopped: {}"
 msgstr "Forhåndsvisningen stoppet: {}"
 
-#: src/preview.rs:199
+#: src/preview.rs:206
 msgid "the camera does not deliver MJPEG"
 msgstr "kameraet leverer ikke MJPEG"
 
@@ -52,207 +52,371 @@ msgstr "Kameraet er tilkoblet"
 msgid "Show Link Studio"
 msgstr "Vis Link Studio"
 
-#: src/tray.rs:79 src/ui.rs:432
+#: src/tray.rs:79 src/ui.rs:448
 msgid "Virtual camera"
 msgstr "Virtuelt kamera"
 
-#: src/tray.rs:87 src/ui.rs:422
+#: src/tray.rs:87 src/ui.rs:438
 msgid "AI tracking"
 msgstr "AI-sporing"
 
-#: src/tray.rs:96 src/ui.rs:387 src/ui.rs:2684
+#: src/tray.rs:96 src/ui.rs:403 src/ui.rs:2751
 msgid "Quit"
 msgstr "Avslutt"
 
-#: src/ui.rs:37
+#: src/ui/claude.rs:216
+msgid "Claude reset the image settings"
+msgstr "Claude tilbakestilte bildeinnstillingene"
+
+#: src/ui/claude.rs:222
+msgid "Claude centered the camera"
+msgstr "Claude sentrerte kameraet"
+
+#: src/ui/claude.rs:390
+msgid "Claude changed: {}"
+msgstr "Claude endret: {}"
+
+#: src/ui/claude.rs:426
+msgid "Claude moved the camera"
+msgstr "Claude flyttet kameraet"
+
+#: src/ui/claude.rs:447
+msgid "Claude changed AI tracking"
+msgstr "Claude endret AI-sporingen"
+
+#: src/ui/claude.rs:464
+msgid "Claude moved the camera to “{}”"
+msgstr "Claude flyttet kameraet til «{}»"
+
+#: src/ui/claude.rs:480
+msgid "Claude saved the position “{}”"
+msgstr "Claude lagret posisjonen «{}»"
+
+#: src/ui/claude.rs:494
+msgid "Claude saved the profile “{}”"
+msgstr "Claude lagret profilen «{}»"
+
+#: src/ui/claude.rs:503
+msgid "Claude applied the profile “{}”"
+msgstr "Claude brukte profilen «{}»"
+
+#: src/ui/claude.rs:513
+msgid "Claude turned the virtual camera on"
+msgstr "Claude slo på det virtuelle kameraet"
+
+#: src/ui/claude.rs:513
+msgid "Claude turned the virtual camera off"
+msgstr "Claude slo av det virtuelle kameraet"
+
+#: src/ui/claude.rs:524
+msgid "Claude turned privacy mode on"
+msgstr "Claude slo på personvernmodus"
+
+#: src/ui/claude.rs:581
+msgid "Claude took a picture through the camera"
+msgstr "Claude tok et bilde gjennom kameraet"
+
+#: src/ui/claude.rs:608
+msgid "Claude"
+msgstr "Claude"
+
+#: src/ui/claude.rs:611
+msgid "Claude Integration (MCP)"
+msgstr "Claude-integrasjon (MCP)"
+
+#: src/ui/claude.rs:612
+msgid ""
+"Lets Claude, in Claude Code or Claude Desktop, read and change the camera "
+"settings, move the gimbal and manage positions and profiles for you. "
+"Everything is off until you turn it on here, and you can turn it off at any "
+"time."
+msgstr ""
+"Lar Claude, i Claude Code eller Claude Desktop, lese og endre "
+"kamerainnstillingene, flytte gimbalen og ordne posisjoner og profiler for "
+"deg. Alt er av til du slår det på her, og du kan slå det av når som helst."
+
+#: src/ui/claude.rs:615
+msgid "Allow control from Claude"
+msgstr "Tillat styring fra Claude"
+
+#: src/ui/claude.rs:616
+msgid ""
+"Settings, gimbal, AI tracking, positions, profiles and the virtual camera"
+msgstr ""
+"Innstillinger, gimbal, AI-sporing, posisjoner, profiler og det virtuelle "
+"kameraet"
+
+#: src/ui/claude.rs:620
+msgid "Allow Claude to see through the camera"
+msgstr "La Claude se gjennom kameraet"
+
+#: src/ui/claude.rs:621
+msgid ""
+"Claude can take pictures to judge lighting and framing. The pictures are "
+"sent to Anthropic to be analyzed, like an image you paste into a chat. A "
+"badge in the preview shows each time."
+msgstr ""
+"Claude kan ta bilder for å vurdere lys og innramming. Bildene sendes til "
+"Anthropic for å bli analysert, akkurat som et bilde du limer inn i en "
+"samtale. Et merke i forhåndsvisningen viser det hver gang."
+
+#: src/ui/claude.rs:626
+msgid "Privacy mode always wins"
+msgstr "Personvernmodus går alltid foran"
+
+#: src/ui/claude.rs:627
+msgid ""
+"While privacy mode is on, Claude can neither see through nor move the "
+"camera. Claude can turn privacy mode on, but only you can turn it off."
+msgstr ""
+"Mens personvernmodus er på, kan Claude verken se gjennom eller flytte "
+"kameraet. Claude kan slå på personvernmodus, men bare du kan slå den av."
+
+#: src/ui/claude.rs:636
+msgid "Connect Claude"
+msgstr "Koble til Claude"
+
+#: src/ui/claude.rs:637
+msgid ""
+"Start a new Claude session after connecting, then ask for example “Make me "
+"look good for my meeting”."
+msgstr ""
+"Start en ny Claude-økt etter tilkoblingen, og spør for eksempel «Gjør meg "
+"klar til møtet»."
+
+#: src/ui/claude.rs:640
+msgid "Claude Code"
+msgstr "Claude Code"
+
+#: src/ui/claude.rs:646
+msgid "Add"
+msgstr "Legg til"
+
+#: src/ui/claude.rs:649 src/ui/claude.rs:661
+msgid "Copy"
+msgstr "Kopier"
+
+#: src/ui/claude.rs:656
+msgid "Claude Desktop"
+msgstr "Claude Desktop"
+
+#: src/ui/claude.rs:657
+msgid "Add this to claude_desktop_config.json"
+msgstr "Legg dette inn i claude_desktop_config.json"
+
+#: src/ui/claude.rs:686
+msgid "Copied"
+msgstr "Kopiert"
+
+#: src/ui/claude.rs:699
+msgid "Could not run the claude command"
+msgstr "Kunne ikke kjøre claude-kommandoen"
+
+#: src/ui/claude.rs:708
+msgid "Link Studio was added to Claude Code"
+msgstr "Link Studio er lagt til i Claude Code"
+
+#: src/ui/claude.rs:712
+msgid "Link Studio is already added to Claude Code"
+msgstr "Link Studio er allerede lagt til i Claude Code"
+
+#: src/ui/claude.rs:714 src/ui/claude.rs:717
+msgid "Could not add it: {}"
+msgstr "Kunne ikke legge det til: {}"
+
+#: src/ui.rs:41
 msgid "Head"
 msgstr "Hode"
 
-#: src/ui.rs:37
+#: src/ui.rs:41
 msgid "Upper body"
 msgstr "Overkropp"
 
-#: src/ui.rs:37
+#: src/ui.rs:41
 msgid "Full body"
 msgstr "Hele kroppen"
 
-#: src/ui.rs:39
+#: src/ui.rs:43
 msgid "4K (2160p)"
 msgstr "4K (2160p)"
 
-#: src/ui.rs:131 src/ui.rs:1202
+#: src/ui.rs:136 src/ui.rs:1233
 msgid "Image"
 msgstr "Bilde"
 
-#: src/ui.rs:136
+#: src/ui.rs:141
 msgid "Exposure"
 msgstr "Eksponering"
 
-#: src/ui.rs:147
+#: src/ui.rs:152
 msgid "White balance"
 msgstr "Hvitbalanse"
 
-#: src/ui.rs:151 src/ui.rs:184
+#: src/ui.rs:156 src/ui.rs:189
 msgid "Focus"
 msgstr "Fokus"
 
-#: src/ui.rs:153
+#: src/ui.rs:158
 msgid "Flicker"
 msgstr "Flimmer"
 
-#: src/ui.rs:154
+#: src/ui.rs:159
 msgid "Use 50 Hz in Europe and most of the world, 60 Hz in North America."
 msgstr "Bruk 50 Hz i Norge og resten av Europa, 60 Hz i Nord-Amerika."
 
-#: src/ui.rs:170
+#: src/ui.rs:175
 msgid "Brightness"
 msgstr "Lysstyrke"
 
-#: src/ui.rs:171
+#: src/ui.rs:176
 msgid "Contrast"
 msgstr "Kontrast"
 
-#: src/ui.rs:172
+#: src/ui.rs:177
 msgid "Saturation"
 msgstr "Fargemetning"
 
-#: src/ui.rs:173
+#: src/ui.rs:178
 msgid "Hue"
 msgstr "Fargetone"
 
-#: src/ui.rs:174
+#: src/ui.rs:179
 msgid "Sharpness"
 msgstr "Skarphet"
 
-#: src/ui.rs:175
+#: src/ui.rs:180
 msgid "Gamma"
 msgstr "Gamma"
 
-#: src/ui.rs:176
+#: src/ui.rs:181
 msgid "Exposure mode"
 msgstr "Eksponeringsmodus"
 
-#: src/ui.rs:177
+#: src/ui.rs:182
 msgid "Exposure time"
 msgstr "Eksponeringstid"
 
-#: src/ui.rs:178
+#: src/ui.rs:183
 msgid "Allow lower frame rate"
 msgstr "Tillat lavere bildefrekvens"
 
-#: src/ui.rs:178
+#: src/ui.rs:183
 msgid "Gives a brighter image in dark rooms"
 msgstr "Gir lysere bilde i mørke rom"
 
-#: src/ui.rs:179
+#: src/ui.rs:184
 msgid "Gain"
 msgstr "Forsterkning"
 
-#: src/ui.rs:180
+#: src/ui.rs:185
 msgid "Backlight compensation"
 msgstr "Motlyskompensasjon"
 
-#: src/ui.rs:181
+#: src/ui.rs:186
 msgid "Automatic white balance"
 msgstr "Automatisk hvitbalanse"
 
-#: src/ui.rs:182
+#: src/ui.rs:187
 msgid "Color temperature"
 msgstr "Fargetemperatur"
 
-#: src/ui.rs:182
+#: src/ui.rs:187
 msgid "Low is warmer, high is cooler"
 msgstr "Lav = varmere, høy = kaldere"
 
-#: src/ui.rs:183
+#: src/ui.rs:188
 msgid "Autofocus"
 msgstr "Autofokus"
 
-#: src/ui.rs:184
+#: src/ui.rs:189
 msgid "Low is near, high is far away"
 msgstr "Lav = nært, høy = langt unna"
 
-#: src/ui.rs:185
+#: src/ui.rs:190
 msgid "Anti-flicker"
 msgstr "Flimmerfilter"
 
-#: src/ui.rs:194
+#: src/ui.rs:199
 msgid "Off"
 msgstr "Av"
 
-#: src/ui.rs:195
+#: src/ui.rs:200
 msgid "Manual"
 msgstr "Manuell"
 
-#: src/ui.rs:196
+#: src/ui.rs:201
 msgid "Automatic"
 msgstr "Automatisk"
 
-#: src/ui.rs:197
+#: src/ui.rs:202
 msgid "Shutter priority"
 msgstr "Lukkerprioritet"
 
-#: src/ui.rs:225
+#: src/ui.rs:230
 msgid "Pan {}° · Tilt {}°"
 msgstr "Panorering {}° · Vipping {}°"
 
-#: src/ui.rs:229
+#: src/ui.rs:234
 msgid "Pan {}° · Tilt {}° · Zoom {}×"
 msgstr "Panorering {}° · Vipping {}° · Zoom {}×"
 
-#: src/ui.rs:373
+#: src/ui.rs:389
 msgid "Looking for camera…"
 msgstr "Ser etter kamera …"
 
-#: src/ui.rs:378
+#: src/ui.rs:394
 msgid "Preview on/off (Ctrl+P)"
 msgstr "Forhåndsvisning av/på (Ctrl+P)"
 
-#: src/ui.rs:382
+#: src/ui.rs:398
 msgid "Preferences"
 msgstr "Innstillinger"
 
-#: src/ui.rs:383 src/ui.rs:2687
+#: src/ui.rs:399 src/ui.rs:2754
 msgid "Keyboard Shortcuts"
 msgstr "Tastatursnarveier"
 
-#: src/ui.rs:384
+#: src/ui.rs:400
 msgid "About Link Studio"
 msgstr "Om Link Studio"
 
-#: src/ui.rs:386
+#: src/ui.rs:402
 msgid "Uninstall Link Studio…"
 msgstr "Avinstaller Link Studio …"
 
-#: src/ui.rs:393
+#: src/ui.rs:409
 msgid "Main Menu"
 msgstr "Hovedmeny"
 
-#: src/ui.rs:397
+#: src/ui.rs:413
 msgid "Show settings (F9)"
 msgstr "Vis innstillinger (F9)"
 
-#: src/ui.rs:427 src/ui.rs:532
+#: src/ui.rs:443 src/ui.rs:554
 msgid "Privacy"
 msgstr "Personvern"
 
-#: src/ui.rs:450
+#: src/ui.rs:453
+msgid "Claude is looking"
+msgstr "Claude ser"
+
+#: src/ui.rs:472
 msgid "Mirror the preview (does not affect other programs)"
 msgstr "Speilvend forhåndsvisningen (påvirker ikke andre programmer)"
 
-#: src/ui.rs:456
+#: src/ui.rs:478
 msgid "Take photo (Ctrl+S)"
 msgstr "Ta bilde (Ctrl+S)"
 
-#: src/ui.rs:464 src/ui.rs:2385 src/ui.rs:2464
+#: src/ui.rs:486 src/ui.rs:2449 src/ui.rs:2529
 msgid "Start Preview"
 msgstr "Start forhåndsvisning"
 
-#: src/ui.rs:470 src/ui.rs:2382 src/ui.rs:2387
+#: src/ui.rs:492 src/ui.rs:2446 src/ui.rs:2451
 msgid "Preview is off"
 msgstr "Forhåndsvisningen er av"
 
-#: src/ui.rs:472 src/ui.rs:2461
+#: src/ui.rs:494 src/ui.rs:2526
 msgid ""
 "Other programs, such as Teams or Zoom, can use the camera while the preview "
 "is off."
@@ -260,139 +424,139 @@ msgstr ""
 "Andre programmer, for eksempel Teams eller Zoom, kan bruke kameraet mens "
 "forhåndsvisningen er av."
 
-#: src/ui.rs:487
+#: src/ui.rs:509
 msgid "Tilt up (Ctrl+↑)"
 msgstr "Vipp opp (Ctrl+↑)"
 
-#: src/ui.rs:488
+#: src/ui.rs:510
 msgid "Tilt down (Ctrl+↓)"
 msgstr "Vipp ned (Ctrl+↓)"
 
-#: src/ui.rs:489
+#: src/ui.rs:511
 msgid "Pan left (Ctrl+←)"
 msgstr "Panorer til venstre (Ctrl+←)"
 
-#: src/ui.rs:490
+#: src/ui.rs:512
 msgid "Pan right (Ctrl+→)"
 msgstr "Panorer til høyre (Ctrl+→)"
 
-#: src/ui.rs:491
+#: src/ui.rs:513
 msgid "Center the camera (Ctrl+Home)"
 msgstr "Sentrer kameraet (Ctrl+Home)"
 
-#: src/ui.rs:517
+#: src/ui.rs:539
 msgid "Zoom out (Ctrl+−)"
 msgstr "Zoom ut (Ctrl+−)"
 
-#: src/ui.rs:518
+#: src/ui.rs:540
 msgid "Zoom in (Ctrl++)"
 msgstr "Zoom inn (Ctrl++)"
 
-#: src/ui.rs:533
+#: src/ui.rs:555
 msgid "Point the camera down. Turn off to return to the previous position."
 msgstr "Vend kameraet ned. Slå av for å gå tilbake til forrige posisjon."
 
-#: src/ui.rs:543
+#: src/ui.rs:565
 msgid "Zoom"
 msgstr "Zoom"
 
-#: src/ui.rs:559
+#: src/ui.rs:581
 msgid "Camera Control"
 msgstr "Kamerastyring"
 
-#: src/ui.rs:572 src/ui.rs:2260
+#: src/ui.rs:594 src/ui.rs:2322
 msgid "Save Position"
 msgstr "Lagre posisjon"
 
-#: src/ui.rs:576
+#: src/ui.rs:598
 msgid "Saved Positions"
 msgstr "Lagrede posisjoner"
 
-#: src/ui.rs:577
+#: src/ui.rs:599
 msgid "Click to move the camera there"
 msgstr "Klikk for å flytte kameraet dit"
 
-#: src/ui.rs:606
+#: src/ui.rs:628
 msgid "No Insta360 Link Found"
 msgstr "Fant ingen Insta360 Link"
 
-#: src/ui.rs:607
+#: src/ui.rs:629
 msgid "Connect the camera with USB. Link Studio connects automatically."
 msgstr "Koble til kameraet med USB. Link Studio kobler seg til automatisk."
 
-#: src/ui.rs:876
+#: src/ui.rs:906
 msgid "Could not zoom: {}"
 msgstr "Kunne ikke zoome: {}"
 
-#: src/ui.rs:1058
+#: src/ui.rs:1088
 msgid "Cannot open the camera: {}"
 msgstr "Kan ikke åpne kameraet: {}"
 
-#: src/ui.rs:1071
+#: src/ui.rs:1101
 msgid "{} · connected"
 msgstr "{} · tilkoblet"
 
-#: src/ui.rs:1089 src/ui.rs:1838
+#: src/ui.rs:1120 src/ui.rs:1869
 msgid "Profile “{}” applied"
 msgstr "Profilen «{}» er brukt"
 
-#: src/ui.rs:1109
+#: src/ui.rs:1140
 msgid "Not connected"
 msgstr "Ikke tilkoblet"
 
-#: src/ui.rs:1112
+#: src/ui.rs:1143
 msgid "The camera was disconnected"
 msgstr "Kameraet ble koblet fra"
 
-#: src/ui.rs:1204
+#: src/ui.rs:1235
 msgid "Tracking"
 msgstr "Sporing"
 
-#: src/ui.rs:1206
+#: src/ui.rs:1237
 msgid "Effects"
 msgstr "Effekter"
 
-#: src/ui.rs:1208 src/ui.rs:1778
+#: src/ui.rs:1239 src/ui.rs:1809
 msgid "Profiles"
 msgstr "Profiler"
 
-#: src/ui.rs:1210 src/ui.rs:1938
+#: src/ui.rs:1241 src/ui.rs:1970
 msgid "Camera"
 msgstr "Kamera"
 
-#: src/ui.rs:1250
+#: src/ui.rs:1281
 msgid "Other Settings"
 msgstr "Andre innstillinger"
 
-#: src/ui.rs:1259
+#: src/ui.rs:1290
 msgid "Reset All Image Settings"
 msgstr "Tilbakestill alle bildeinnstillinger"
 
-#: src/ui.rs:1304 src/ui.rs:1379
+#: src/ui.rs:1335 src/ui.rs:1410
 msgid "Reset to default"
 msgstr "Tilbakestill til standard"
 
-#: src/ui.rs:1365
+#: src/ui.rs:1396
 msgid "Exposure compensation"
 msgstr "EV-kompensasjon"
 
-#: src/ui.rs:1366
+#: src/ui.rs:1397
 msgid "Brighter or darker image, in EV steps"
 msgstr "Lysere eller mørkere bilde, i EV-trinn"
 
-#: src/ui.rs:1393 src/ui.rs:1408
+#: src/ui.rs:1424 src/ui.rs:1439
 msgid "Could not change the setting: {}"
 msgstr "Kunne ikke endre innstillingen: {}"
 
-#: src/ui.rs:1433
+#: src/ui.rs:1464
 msgid "Image settings reset"
 msgstr "Bildeinnstillingene er tilbakestilt"
 
-#: src/ui.rs:1440
+#: src/ui.rs:1471
 msgid "AI Tracking"
 msgstr "AI-sporing"
 
-#: src/ui.rs:1441
+#: src/ui.rs:1472
 msgid ""
 "The camera uses its gimbal to keep you in the picture automatically. It "
 "turns tracking off by itself after 60 seconds with no one in the picture."
@@ -400,52 +564,52 @@ msgstr ""
 "Kameraet bruker gimbalen til å holde deg i bildet automatisk. Sporingen slås "
 "av av seg selv etter 60 sekunder uten noen i bildet."
 
-#: src/ui.rs:1444
+#: src/ui.rs:1475
 msgid "Follow Me"
 msgstr "Følg meg"
 
-#: src/ui.rs:1445
+#: src/ui.rs:1476
 msgid "Ctrl+T turns tracking on and off"
 msgstr "Ctrl+T slår sporing av og på"
 
-#: src/ui.rs:1449
+#: src/ui.rs:1480
 msgid "Framing"
 msgstr "Innramming"
 
-#: src/ui.rs:1450
+#: src/ui.rs:1481
 msgid "How much of you stays in the picture"
 msgstr "Hvor mye av deg som skal være med i bildet"
 
-#: src/ui.rs:1454
+#: src/ui.rs:1485
 msgid "Who to Follow"
 msgstr "Hvem skal følges"
 
-#: src/ui.rs:1455
+#: src/ui.rs:1486
 msgid "One person"
 msgstr "Én person"
 
-#: src/ui.rs:1455
+#: src/ui.rs:1486
 msgid "Group"
 msgstr "Gruppe"
 
-#: src/ui.rs:1459
+#: src/ui.rs:1490
 msgid "A special mode is active"
 msgstr "En spesialmodus er aktiv"
 
-#: src/ui.rs:1460
+#: src/ui.rs:1491
 msgid "DeskView, whiteboard or overhead view – often started by a hand gesture"
 msgstr ""
 "DeskView, tavle eller visning ovenfra – ofte startet med en håndbevegelse"
 
-#: src/ui.rs:1465
+#: src/ui.rs:1496
 msgid "Normal View"
 msgstr "Normal visning"
 
-#: src/ui.rs:1477
+#: src/ui.rs:1508
 msgid "Hand Gestures"
 msgstr "Håndbevegelser"
 
-#: src/ui.rs:1478
+#: src/ui.rs:1509
 msgid ""
 "The camera recognizes these gestures by itself. They are always on and "
 "cannot be turned off from Linux. Keep your face in the picture and do not "
@@ -454,11 +618,11 @@ msgstr ""
 "Kameraet gjenkjenner disse bevegelsene selv. De er alltid på og kan ikke "
 "slås av fra Linux. Hold ansiktet i bildet, og ikke dekk det med hånden."
 
-#: src/ui.rs:1482
+#: src/ui.rs:1513
 msgid "Open palm"
 msgstr "Åpen håndflate"
 
-#: src/ui.rs:1482
+#: src/ui.rs:1513
 msgid ""
 "Turns AI tracking on or off. Hold your palm toward the camera next to your "
 "face until the light flashes green."
@@ -466,11 +630,11 @@ msgstr ""
 "Slår AI-sporing av eller på. Hold håndflaten mot kameraet ved siden av "
 "ansiktet til lampen blinker grønt."
 
-#: src/ui.rs:1483
+#: src/ui.rs:1514
 msgid "L sign"
 msgstr "L-tegn"
 
-#: src/ui.rs:1483
+#: src/ui.rs:1514
 msgid ""
 "Zoom. Hold the L until the light flashes blue, then move your hand up to "
 "zoom in or down to zoom out."
@@ -478,11 +642,11 @@ msgstr ""
 "Zoom. Hold L-en til lampen blinker blått, og flytt så hånden opp for å zoome "
 "inn eller ned for å zoome ut."
 
-#: src/ui.rs:1484
+#: src/ui.rs:1515
 msgid "Peace sign"
 msgstr "Fredstegn"
 
-#: src/ui.rs:1484
+#: src/ui.rs:1515
 msgid ""
 "Turns whiteboard mode on or off. Needs the recognition markers on the "
 "corners of the whiteboard."
@@ -490,11 +654,11 @@ msgstr ""
 "Slår tavlemodus av eller på. Krever gjenkjenningsmerkene i hjørnene av "
 "tavlen."
 
-#: src/ui.rs:1498
+#: src/ui.rs:1529
 msgid "Ended up in another mode?"
 msgstr "Havnet kameraet i en annen modus?"
 
-#: src/ui.rs:1499
+#: src/ui.rs:1530
 msgid ""
 "Use “Normal View” above, which appears when the camera is in DeskView or "
 "whiteboard mode."
@@ -502,19 +666,19 @@ msgstr ""
 "Bruk «Normal visning» over, som dukker opp når kameraet er i DeskView eller "
 "tavlemodus."
 
-#: src/ui.rs:1519
+#: src/ui.rs:1550
 msgid "Could not change the framing: {}"
 msgstr "Kunne ikke endre innramming: {}"
 
-#: src/ui.rs:1529
+#: src/ui.rs:1560
 msgid "Could not change who to follow: {}"
 msgstr "Kunne ikke endre hvem som skal følges: {}"
 
-#: src/ui.rs:1546 src/ui.rs:1560
+#: src/ui.rs:1577 src/ui.rs:1591
 msgid "Virtual Camera"
 msgstr "Virtuelt kamera"
 
-#: src/ui.rs:1547
+#: src/ui.rs:1578
 msgid ""
 "Sends the picture from Link Studio to other programs, such as Teams, Zoom or "
 "the browser, as “Link Studio Camera”. The preview and the meeting can then "
@@ -524,51 +688,51 @@ msgstr ""
 "eller nettleseren, som «Link Studio Camera». Da kan forhåndsvisningen og "
 "møtet kjøre samtidig."
 
-#: src/ui.rs:1550
+#: src/ui.rs:1581
 msgid "Set up the virtual camera"
 msgstr "Sett opp det virtuelle kameraet"
 
-#: src/ui.rs:1553
+#: src/ui.rs:1584
 msgid "Set Up…"
 msgstr "Sett opp …"
 
-#: src/ui.rs:1561
+#: src/ui.rs:1592
 msgid "Keeps running when the window is closed. Quit from the menu to stop it."
 msgstr "Fortsetter når vinduet lukkes. Velg Avslutt i menyen for å stoppe det."
 
-#: src/ui.rs:1567
+#: src/ui.rs:1598
 msgid "Resolution"
 msgstr "Oppløsning"
 
-#: src/ui.rs:1573
+#: src/ui.rs:1604
 msgid "Remove the virtual camera setup"
 msgstr "Fjern oppsettet for det virtuelle kameraet"
 
-#: src/ui.rs:1574
+#: src/ui.rs:1605
 msgid "Needs the administrator password"
 msgstr "Krever administratorpassordet"
 
-#: src/ui.rs:1577
+#: src/ui.rs:1608
 msgid "Remove…"
 msgstr "Fjern …"
 
-#: src/ui.rs:1635 src/ui.rs:1725
+#: src/ui.rs:1666 src/ui.rs:1756
 msgid "Restart the computer to finish the setup."
 msgstr "Start datamaskinen på nytt for å fullføre oppsettet."
 
-#: src/ui.rs:1637
+#: src/ui.rs:1668
 msgid "Installs the v4l2loopback driver. Needs the administrator password."
 msgstr "Installerer driveren v4l2loopback. Krever administratorpassordet."
 
-#: src/ui.rs:1651
+#: src/ui.rs:1682
 msgid "Removing the Virtual Camera"
 msgstr "Fjerner det virtuelle kameraet"
 
-#: src/ui.rs:1651
+#: src/ui.rs:1682
 msgid "Setting Up the Virtual Camera"
 msgstr "Setter opp det virtuelle kameraet"
 
-#: src/ui.rs:1654
+#: src/ui.rs:1685
 msgid ""
 "Enter the administrator password when asked. Downloading the driver can take "
 "a few minutes."
@@ -576,39 +740,39 @@ msgstr ""
 "Skriv inn administratorpassordet når du blir spurt. Det kan ta noen minutter "
 "å laste ned driveren."
 
-#: src/ui.rs:1658
+#: src/ui.rs:1689
 msgid "Waiting for the administrator password…"
 msgstr "Venter på administratorpassordet …"
 
-#: src/ui.rs:1674
+#: src/ui.rs:1705
 msgid "Details"
 msgstr "Detaljer"
 
-#: src/ui.rs:1687 src/ui.rs:2664 src/ui.rs:2688
+#: src/ui.rs:1718 src/ui.rs:2731 src/ui.rs:2755
 msgid "Close"
 msgstr "Lukk"
 
-#: src/ui.rs:1716
+#: src/ui.rs:1747
 msgid "The virtual camera setup has been removed"
 msgstr "Oppsettet for det virtuelle kameraet er fjernet"
 
-#: src/ui.rs:1723
+#: src/ui.rs:1754
 msgid "The virtual camera is ready"
 msgstr "Det virtuelle kameraet er klart"
 
-#: src/ui.rs:1728
+#: src/ui.rs:1759
 msgid "Choose “Link Studio Camera” in Teams, Zoom or your browser."
 msgstr "Velg «Link Studio Camera» i Teams, Zoom eller nettleseren."
 
-#: src/ui.rs:1746
+#: src/ui.rs:1777
 msgid "The setup did not finish"
 msgstr "Oppsettet ble ikke fullført"
 
-#: src/ui.rs:1747
+#: src/ui.rs:1778
 msgid "See the details below."
 msgstr "Se detaljene under."
 
-#: src/ui.rs:1779
+#: src/ui.rs:1810
 msgid ""
 "A profile stores the image and tracking settings. Star a profile to apply it "
 "automatically every time the camera is connected."
@@ -616,63 +780,63 @@ msgstr ""
 "En profil lagrer bilde- og sporingsinnstillingene. Stjernemerk en profil for "
 "å bruke den automatisk hver gang kameraet kobles til."
 
-#: src/ui.rs:1782
+#: src/ui.rs:1813
 msgid "Save current settings as…"
 msgstr "Lagre nåværende innstillinger som …"
 
-#: src/ui.rs:1813
+#: src/ui.rs:1844
 msgid "Applied automatically on connect"
 msgstr "Brukes automatisk ved tilkobling"
 
-#: src/ui.rs:1813
+#: src/ui.rs:1844
 msgid "Click to apply"
 msgstr "Klikk for å bruke"
 
-#: src/ui.rs:1818
+#: src/ui.rs:1849
 msgid "Apply automatically when the camera is connected"
 msgstr "Bruk automatisk når kameraet kobles til"
 
-#: src/ui.rs:1824
+#: src/ui.rs:1855
 msgid "Delete profile"
 msgstr "Slett profilen"
 
-#: src/ui.rs:1866
+#: src/ui.rs:1897
 msgid "Profile “{}” deleted"
 msgstr "Profilen «{}» er slettet"
 
-#: src/ui.rs:1900
+#: src/ui.rs:1931
 msgid "Profile “{}” saved"
 msgstr "Profilen «{}» er lagret"
 
-#: src/ui.rs:1940
+#: src/ui.rs:1972
 msgid "Model"
 msgstr "Modell"
 
-#: src/ui.rs:1941
+#: src/ui.rs:1973
 msgid "Serial number"
 msgstr "Serienummer"
 
-#: src/ui.rs:1942
+#: src/ui.rs:1974
 msgid "Firmware"
 msgstr "Fastvare"
 
-#: src/ui.rs:1943
+#: src/ui.rs:1975
 msgid "Device"
 msgstr "Enhet"
 
-#: src/ui.rs:1944
+#: src/ui.rs:1976
 msgid "USB ID"
 msgstr "USB-ID"
 
-#: src/ui.rs:1949
+#: src/ui.rs:1981
 msgid "Unknown"
 msgstr "Ukjent"
 
-#: src/ui.rs:1958
+#: src/ui.rs:1990
 msgid "Preview"
 msgstr "Forhåndsvisning"
 
-#: src/ui.rs:1959
+#: src/ui.rs:1991
 msgid ""
 "Only affects the preview and photos in Link Studio. Programs such as Teams "
 "or Zoom choose their own resolution."
@@ -680,91 +844,91 @@ msgstr ""
 "Gjelder bare forhåndsvisningen og bilder i Link Studio. Programmer som Teams "
 "og Zoom velger sin egen oppløsning."
 
-#: src/ui.rs:1964
+#: src/ui.rs:1996
 msgid "Quality"
 msgstr "Kvalitet"
 
-#: src/ui.rs:1965 src/ui.rs:2373
+#: src/ui.rs:1997 src/ui.rs:2437
 msgid "Higher quality uses more processing power"
 msgstr "Høyere kvalitet bruker mer prosessorkraft"
 
-#: src/ui.rs:1970
+#: src/ui.rs:2002
 msgid "Start Automatically"
 msgstr "Start automatisk"
 
-#: src/ui.rs:1971
+#: src/ui.rs:2003
 msgid "Start the preview when the camera is connected"
 msgstr "Start forhåndsvisningen når kameraet kobles til"
 
-#: src/ui.rs:1996
+#: src/ui.rs:2028
 msgid "Gimbal"
 msgstr "Gimbal"
 
-#: src/ui.rs:1998
+#: src/ui.rs:2030
 msgid "Center the Camera"
 msgstr "Sentrer kameraet"
 
-#: src/ui.rs:1999
+#: src/ui.rs:2031
 msgid "Moves the gimbal back to its middle position"
 msgstr "Flytter gimbalen tilbake til midtstilling"
 
-#: src/ui.rs:2001
+#: src/ui.rs:2033
 msgid "Center"
 msgstr "Sentrer"
 
-#: src/ui.rs:2079
+#: src/ui.rs:2112
 msgid "Could not change AI tracking: {}"
 msgstr "Kunne ikke endre AI-sporing: {}"
 
-#: src/ui.rs:2150
+#: src/ui.rs:2212
 msgid "No saved positions yet"
 msgstr "Ingen lagrede posisjoner ennå"
 
-#: src/ui.rs:2174
+#: src/ui.rs:2236
 msgid "Replace with the current position"
 msgstr "Erstatt med nåværende posisjon"
 
-#: src/ui.rs:2180
+#: src/ui.rs:2242
 msgid "Delete position"
 msgstr "Slett posisjonen"
 
-#: src/ui.rs:2207
+#: src/ui.rs:2269
 msgid "Position updated"
 msgstr "Posisjonen er oppdatert"
 
-#: src/ui.rs:2242
+#: src/ui.rs:2304
 msgid "AI tracking was turned off to move the camera"
 msgstr "AI-sporing er slått av for å flytte kameraet"
 
-#: src/ui.rs:2258
+#: src/ui.rs:2320
 msgid "Position {}"
 msgstr "Posisjon {}"
 
-#: src/ui.rs:2260
+#: src/ui.rs:2322
 msgid "Give the current camera position a name."
 msgstr "Gi den nåværende kameraposisjonen et navn."
 
-#: src/ui.rs:2262 src/ui.rs:2623
+#: src/ui.rs:2324 src/ui.rs:2689
 msgid "Cancel"
 msgstr "Avbryt"
 
-#: src/ui.rs:2262
+#: src/ui.rs:2324
 msgid "Save"
 msgstr "Lagre"
 
-#: src/ui.rs:2283
+#: src/ui.rs:2345
 msgid "“{}” saved"
 msgstr "«{}» er lagret"
 
-#: src/ui.rs:2347
+#: src/ui.rs:2411
 msgid "The virtual camera stopped: {}"
 msgstr "Det virtuelle kameraet stoppet: {}"
 
-#: src/ui.rs:2371
+#: src/ui.rs:2435
 msgid "Uses the virtual camera's resolution while it is on"
 msgstr "Bruker oppløsningen til det virtuelle kameraet mens det er på"
 
-#: src/ui.rs:2383
+#: src/ui.rs:2447
 msgid ""
 "The virtual camera is still running, so other programs keep getting the "
 "picture."
@@ -772,11 +936,11 @@ msgstr ""
 "Det virtuelle kameraet kjører fortsatt, så andre programmer får fortsatt "
 "bildet."
 
-#: src/ui.rs:2397
+#: src/ui.rs:2461
 msgid "Link Studio is still running"
 msgstr "Link Studio kjører fortsatt"
 
-#: src/ui.rs:2400
+#: src/ui.rs:2464
 msgid ""
 "The virtual camera stays on. Use the Link Studio status icon to show the "
 "window, turn the virtual camera off or quit."
@@ -784,7 +948,7 @@ msgstr ""
 "Det virtuelle kameraet er fortsatt på. Bruk statusikonet til Link Studio for "
 "å vise vinduet, slå av det virtuelle kameraet eller avslutte."
 
-#: src/ui.rs:2402
+#: src/ui.rs:2466
 msgid ""
 "The virtual camera stays on. Open Link Studio again to turn it off, or "
 "choose Quit in its menu."
@@ -792,35 +956,35 @@ msgstr ""
 "Det virtuelle kameraet er fortsatt på. Åpne Link Studio igjen for å slå det "
 "av, eller velg Avslutt i menyen."
 
-#: src/ui.rs:2449
+#: src/ui.rs:2514
 msgid "The virtual camera stopped"
 msgstr "Det virtuelle kameraet stoppet"
 
-#: src/ui.rs:2455
+#: src/ui.rs:2520
 msgid "The preview stopped"
 msgstr "Forhåndsvisningen stoppet"
 
-#: src/ui.rs:2464
+#: src/ui.rs:2529
 msgid "Try Again"
 msgstr "Prøv igjen"
 
-#: src/ui.rs:2470
+#: src/ui.rs:2535
 msgid "Start the preview to take a photo"
 msgstr "Start forhåndsvisningen for å ta bilde"
 
-#: src/ui.rs:2484
+#: src/ui.rs:2549
 msgid "Photo saved"
 msgstr "Bildet er lagret"
 
-#: src/ui.rs:2484
+#: src/ui.rs:2549
 msgid "Open"
 msgstr "Åpne"
 
-#: src/ui.rs:2495
+#: src/ui.rs:2560
 msgid "Could not save the photo: {}"
 msgstr "Kunne ikke lagre bildet: {}"
 
-#: src/ui.rs:2506
+#: src/ui.rs:2571
 msgid ""
 "Control the Insta360 Link webcam on Linux: image, gimbal, AI tracking and "
 "profiles."
@@ -829,55 +993,55 @@ msgstr ""
 "profiler."
 
 #. Translators: put your name(s) here to be credited in the About dialog.
-#: src/ui.rs:2510
+#: src/ui.rs:2575
 msgid "translator-credits"
 msgstr ""
 
-#: src/ui.rs:2515
+#: src/ui.rs:2580
 msgid "Camera command mapping"
 msgstr "Kartlegging av kamerakommandoer"
 
-#: src/ui.rs:2524
+#: src/ui.rs:2589
 msgid "General"
 msgstr "Generelt"
 
-#: src/ui.rs:2528
+#: src/ui.rs:2593
 msgid "Appearance"
 msgstr "Utseende"
 
-#: src/ui.rs:2531
+#: src/ui.rs:2596
 msgid "Style"
 msgstr "Stil"
 
-#: src/ui.rs:2532
+#: src/ui.rs:2597
 msgid "Follow system"
 msgstr "Følg systemet"
 
-#: src/ui.rs:2532
+#: src/ui.rs:2597
 msgid "Light"
 msgstr "Lys"
 
-#: src/ui.rs:2532
+#: src/ui.rs:2597
 msgid "Dark"
 msgstr "Mørk"
 
-#: src/ui.rs:2539
+#: src/ui.rs:2604
 msgid "System default"
 msgstr "Systemstandard"
 
-#: src/ui.rs:2547 src/ui.rs:2551
+#: src/ui.rs:2612 src/ui.rs:2616
 msgid "Language"
 msgstr "Språk"
 
-#: src/ui.rs:2548
+#: src/ui.rs:2613
 msgid "“System default” uses the language of your desktop."
 msgstr "«Systemstandard» bruker samme språk som skrivebordet."
 
-#: src/ui.rs:2608
+#: src/ui.rs:2674
 msgid "Uninstall Link Studio?"
 msgstr "Avinstallere Link Studio?"
 
-#: src/ui.rs:2609
+#: src/ui.rs:2675
 msgid ""
 "The program and its entry in the app menu will be removed. Photos you have "
 "taken stay in your Pictures folder."
@@ -885,78 +1049,78 @@ msgstr ""
 "Programmet og snarveien i appmenyen fjernes. Bilder du har tatt, blir "
 "liggende i Bilder-mappen."
 
-#: src/ui.rs:2612
+#: src/ui.rs:2678
 msgid "Also delete saved positions, profiles and settings"
 msgstr "Slett også lagrede posisjoner, profiler og innstillinger"
 
-#: src/ui.rs:2615
+#: src/ui.rs:2681
 msgid "Also remove the virtual camera setup (needs the administrator password)"
 msgstr ""
 "Fjern også oppsettet for det virtuelle kameraet (krever "
 "administratorpassordet)"
 
-#: src/ui.rs:2623
+#: src/ui.rs:2689
 msgid "Uninstall"
 msgstr "Avinstaller"
 
-#: src/ui.rs:2642
+#: src/ui.rs:2708
 msgid "Could not remove the virtual camera setup: {}"
 msgstr "Kunne ikke fjerne oppsettet for det virtuelle kameraet: {}"
 
-#: src/ui.rs:2655
+#: src/ui.rs:2722
 msgid "Uninstalling failed: {}"
 msgstr "Avinstalleringen mislyktes: {}"
 
-#: src/ui.rs:2659
+#: src/ui.rs:2726
 msgid ""
 "Link Studio and all its settings have been removed. The window will now "
 "close."
 msgstr "Link Studio og alle innstillinger er fjernet. Vinduet lukkes nå."
 
-#: src/ui.rs:2661
+#: src/ui.rs:2728
 msgid "Link Studio has been removed. The window will now close."
 msgstr "Link Studio er fjernet. Vinduet lukkes nå."
 
-#: src/ui.rs:2663
+#: src/ui.rs:2730
 msgid "Uninstalled"
 msgstr "Avinstallert"
 
-#: src/ui.rs:2676
+#: src/ui.rs:2743
 msgid "Ctrl + arrow keys"
 msgstr "Ctrl + piltaster"
 
-#: src/ui.rs:2676
+#: src/ui.rs:2743
 msgid "Move the camera"
 msgstr "Flytt kameraet"
 
-#: src/ui.rs:2677
+#: src/ui.rs:2744
 msgid "Ctrl + plus / minus"
 msgstr "Ctrl + pluss / minus"
 
-#: src/ui.rs:2677
+#: src/ui.rs:2744
 msgid "Zoom in / out"
 msgstr "Zoom inn / ut"
 
-#: src/ui.rs:2678
+#: src/ui.rs:2745
 msgid "Center the camera"
 msgstr "Sentrer kameraet"
 
-#: src/ui.rs:2679
+#: src/ui.rs:2746
 msgid "Go to saved position"
 msgstr "Gå til lagret posisjon"
 
-#: src/ui.rs:2680
+#: src/ui.rs:2747
 msgid "AI tracking on/off"
 msgstr "AI-sporing av/på"
 
-#: src/ui.rs:2681
+#: src/ui.rs:2748
 msgid "Preview on/off"
 msgstr "Forhåndsvisning av/på"
 
-#: src/ui.rs:2682
+#: src/ui.rs:2749
 msgid "Take photo"
 msgstr "Ta bilde"
 
-#: src/ui.rs:2683
+#: src/ui.rs:2750
 msgid "Show/hide settings"
 msgstr "Vis/skjul innstillinger"

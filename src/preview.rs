@@ -25,6 +25,9 @@ const PIX_FMT_MJPEG: u32 = u32::from_le_bytes(*b"MJPG");
 const BUFFER_COUNT: u32 = 4;
 const POLL_TIMEOUT_MS: i32 = 200;
 const MAX_DISPLAY_WIDTH: i32 = 1920;
+/// Pictures for Claude: about the largest size it reads without scaling.
+const SNAPSHOT_WIDTH: usize = 1280;
+const SNAPSHOT_QUALITY: u8 = 85;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -106,6 +109,8 @@ pub enum Event {
     Error(String),
     /// The stream keeps running for the preview, but the virtual camera stopped.
     VirtualCameraError(String),
+    /// A picture asked for through `Options::snapshot`, unmirrored, as JPEG.
+    Snapshot { jpeg: Vec<u8>, width: usize, height: usize },
 }
 
 pub struct Options {
@@ -117,6 +122,8 @@ pub struct Options {
     /// preview hidden while it feeds the virtual camera.
     pub show: Arc<AtomicBool>,
     pub virtual_camera: Option<PathBuf>,
+    /// Set to ask for the next frame as a downscaled JPEG (for Claude).
+    pub snapshot: Arc<AtomicBool>,
 }
 
 pub struct Preview {
@@ -299,7 +306,8 @@ fn stream(
         // The virtual camera needs every frame; the preview drops frames
         // while the UI is still busy with earlier ones.
         let to_preview = options.show.load(Ordering::Relaxed) && !tx.is_full();
-        if jpeg.is_empty() || (writer.is_none() && !to_preview) {
+        let to_snapshot = options.snapshot.load(Ordering::Relaxed);
+        if jpeg.is_empty() || (writer.is_none() && !to_preview && !to_snapshot) {
             continue;
         }
         let Some((mut width, mut height, mut rgb)) = decode(&jpeg) else {
@@ -309,6 +317,11 @@ fn stream(
             if let Err(err) = out.write(&rgb, width as usize, height as usize) {
                 let _ = tx.force_send(Event::VirtualCameraError(err.to_string()));
                 *writer = None;
+            }
+        }
+        if to_snapshot && options.snapshot.swap(false, Ordering::Relaxed) {
+            if let Some(event) = snapshot(&rgb, width as usize, height as usize) {
+                let _ = tx.force_send(event);
             }
         }
         if !to_preview {
@@ -338,6 +351,45 @@ fn decode(jpeg: &[u8]) -> Option<(i32, i32, Vec<u8>)> {
     let pixels = decoder.decode().ok()?;
     let (width, height) = decoder.dimensions()?;
     Some((width as i32, height as i32, pixels))
+}
+
+fn snapshot(rgb: &[u8], width: usize, height: usize) -> Option<Event> {
+    let (pixels, width, height) = if width > SNAPSHOT_WIDTH {
+        let target_height = (height * SNAPSHOT_WIDTH + width / 2) / width;
+        (resize(rgb, width, height, SNAPSHOT_WIDTH, target_height), SNAPSHOT_WIDTH, target_height)
+    } else {
+        (rgb.to_vec(), width, height)
+    };
+    let mut jpeg = Vec::new();
+    jpeg_encoder::Encoder::new(&mut jpeg, SNAPSHOT_QUALITY)
+        .encode(&pixels, width as u16, height as u16, jpeg_encoder::ColorType::Rgb)
+        .ok()?;
+    Some(Event::Snapshot { jpeg, width, height })
+}
+
+/// Area-average downscale of an RGB image to any smaller size.
+fn resize(rgb: &[u8], width: usize, height: usize, out_w: usize, out_h: usize) -> Vec<u8> {
+    let mut out = vec![0u8; out_w * out_h * 3];
+    for oy in 0..out_h {
+        let (y0, y1) = (oy * height / out_h, ((oy + 1) * height / out_h).max(oy * height / out_h + 1));
+        for ox in 0..out_w {
+            let (x0, x1) = (ox * width / out_w, ((ox + 1) * width / out_w).max(ox * width / out_w + 1));
+            let mut sum = [0u32; 3];
+            for y in y0..y1 {
+                for px in rgb[(y * width + x0) * 3..(y * width + x1) * 3].as_chunks::<3>().0 {
+                    sum[0] += px[0] as u32;
+                    sum[1] += px[1] as u32;
+                    sum[2] += px[2] as u32;
+                }
+            }
+            let count = ((y1 - y0) * (x1 - x0)) as u32;
+            let i = (oy * out_w + ox) * 3;
+            out[i] = (sum[0] / count) as u8;
+            out[i + 1] = (sum[1] / count) as u8;
+            out[i + 2] = (sum[2] / count) as u8;
+        }
+    }
+    out
 }
 
 /// 2×2 box filter: halves an RGB image in both directions.

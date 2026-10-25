@@ -149,7 +149,7 @@ impl Writer {
 
 /// BT.601 limited-range RGB → YUYV (4:2:2), two pixels at a time.
 fn rgb_to_yuyv(rgb: &[u8], out: &mut [u8]) {
-    for (px, yuyv) in rgb.chunks_exact(6).zip(out.chunks_exact_mut(4)) {
+    for (px, yuyv) in rgb.as_chunks::<6>().0.iter().zip(out.as_chunks_mut::<4>().0) {
         let (r0, g0, b0) = (px[0] as i32, px[1] as i32, px[2] as i32);
         let (r1, g1, b1) = (px[3] as i32, px[4] as i32, px[5] as i32);
         let y = |r: i32, g: i32, b: i32| (((66 * r + 129 * g + 25 * b + 128) >> 8) + 16) as u8;

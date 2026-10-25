@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Link Studio\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 17:16+0100\n"
+"POT-Creation-Date: 2026-10-25 17:40+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,21 +21,21 @@ msgstr ""
 msgid "Position"
 msgstr ""
 
-#: src/preview.rs:151
+#: src/preview.rs:153
 msgid ""
 "The camera is being used by another program. Close it, or try again when it "
 "is done."
 msgstr ""
 
-#: src/preview.rs:153
+#: src/preview.rs:155
 msgid "The camera was disconnected."
 msgstr ""
 
-#: src/preview.rs:154
+#: src/preview.rs:156
 msgid "The preview stopped: {}"
 msgstr ""
 
-#: src/preview.rs:197
+#: src/preview.rs:199
 msgid "the camera does not deliver MJPEG"
 msgstr ""
 
@@ -55,867 +55,875 @@ msgstr ""
 msgid "Show Link Studio"
 msgstr ""
 
-#: src/tray.rs:79 src/ui.rs:427
+#: src/tray.rs:79 src/ui.rs:432
 msgid "Virtual camera"
 msgstr ""
 
-#: src/tray.rs:87 src/ui.rs:417
+#: src/tray.rs:87 src/ui.rs:422
 msgid "AI tracking"
 msgstr ""
 
-#: src/tray.rs:96 src/ui.rs:382 src/ui.rs:2602
+#: src/tray.rs:96 src/ui.rs:387 src/ui.rs:2684
 msgid "Quit"
 msgstr ""
 
-#: src/ui.rs:35
+#: src/ui.rs:37
 msgid "Head"
 msgstr ""
 
-#: src/ui.rs:35
+#: src/ui.rs:37
 msgid "Upper body"
 msgstr ""
 
-#: src/ui.rs:35
+#: src/ui.rs:37
 msgid "Full body"
 msgstr ""
 
-#: src/ui.rs:37
+#: src/ui.rs:39
 msgid "4K (2160p)"
 msgstr ""
 
-#: src/ui.rs:129 src/ui.rs:1182
+#: src/ui.rs:131 src/ui.rs:1202
 msgid "Image"
 msgstr ""
 
-#: src/ui.rs:134
+#: src/ui.rs:136
 msgid "Exposure"
 msgstr ""
 
-#: src/ui.rs:145
+#: src/ui.rs:147
 msgid "White balance"
 msgstr ""
 
-#: src/ui.rs:149 src/ui.rs:182
+#: src/ui.rs:151 src/ui.rs:184
 msgid "Focus"
 msgstr ""
 
-#: src/ui.rs:151
+#: src/ui.rs:153
 msgid "Flicker"
 msgstr ""
 
-#: src/ui.rs:152
+#: src/ui.rs:154
 msgid "Use 50 Hz in Europe and most of the world, 60 Hz in North America."
 msgstr ""
 
-#: src/ui.rs:168
+#: src/ui.rs:170
 msgid "Brightness"
 msgstr ""
 
-#: src/ui.rs:169
+#: src/ui.rs:171
 msgid "Contrast"
 msgstr ""
 
-#: src/ui.rs:170
+#: src/ui.rs:172
 msgid "Saturation"
 msgstr ""
 
-#: src/ui.rs:171
+#: src/ui.rs:173
 msgid "Hue"
 msgstr ""
 
-#: src/ui.rs:172
+#: src/ui.rs:174
 msgid "Sharpness"
 msgstr ""
 
-#: src/ui.rs:173
+#: src/ui.rs:175
 msgid "Gamma"
 msgstr ""
 
-#: src/ui.rs:174
+#: src/ui.rs:176
 msgid "Exposure mode"
 msgstr ""
 
-#: src/ui.rs:175
+#: src/ui.rs:177
 msgid "Exposure time"
 msgstr ""
 
-#: src/ui.rs:176
+#: src/ui.rs:178
 msgid "Allow lower frame rate"
 msgstr ""
 
-#: src/ui.rs:176
+#: src/ui.rs:178
 msgid "Gives a brighter image in dark rooms"
 msgstr ""
 
-#: src/ui.rs:177
+#: src/ui.rs:179
 msgid "Gain"
 msgstr ""
 
-#: src/ui.rs:178
+#: src/ui.rs:180
 msgid "Backlight compensation"
 msgstr ""
 
-#: src/ui.rs:179
+#: src/ui.rs:181
 msgid "Automatic white balance"
 msgstr ""
 
-#: src/ui.rs:180
+#: src/ui.rs:182
 msgid "Color temperature"
 msgstr ""
 
-#: src/ui.rs:180
+#: src/ui.rs:182
 msgid "Low is warmer, high is cooler"
 msgstr ""
 
-#: src/ui.rs:181
+#: src/ui.rs:183
 msgid "Autofocus"
 msgstr ""
 
-#: src/ui.rs:182
+#: src/ui.rs:184
 msgid "Low is near, high is far away"
 msgstr ""
 
-#: src/ui.rs:183
+#: src/ui.rs:185
 msgid "Anti-flicker"
 msgstr ""
 
-#: src/ui.rs:192
+#: src/ui.rs:194
 msgid "Off"
 msgstr ""
 
-#: src/ui.rs:193
+#: src/ui.rs:195
 msgid "Manual"
 msgstr ""
 
-#: src/ui.rs:194
+#: src/ui.rs:196
 msgid "Automatic"
 msgstr ""
 
-#: src/ui.rs:195
+#: src/ui.rs:197
 msgid "Shutter priority"
 msgstr ""
 
-#: src/ui.rs:223
+#: src/ui.rs:225
 msgid "Pan {}° · Tilt {}°"
 msgstr ""
 
-#: src/ui.rs:227
+#: src/ui.rs:229
 msgid "Pan {}° · Tilt {}° · Zoom {}×"
 msgstr ""
 
-#: src/ui.rs:368
+#: src/ui.rs:373
 msgid "Looking for camera…"
 msgstr ""
 
-#: src/ui.rs:373
+#: src/ui.rs:378
 msgid "Preview on/off (Ctrl+P)"
 msgstr ""
 
-#: src/ui.rs:377
+#: src/ui.rs:382
 msgid "Preferences"
 msgstr ""
 
-#: src/ui.rs:378 src/ui.rs:2605
+#: src/ui.rs:383 src/ui.rs:2687
 msgid "Keyboard Shortcuts"
 msgstr ""
 
-#: src/ui.rs:379
+#: src/ui.rs:384
 msgid "About Link Studio"
 msgstr ""
 
-#: src/ui.rs:381
+#: src/ui.rs:386
 msgid "Uninstall Link Studio…"
 msgstr ""
 
-#: src/ui.rs:388
+#: src/ui.rs:393
 msgid "Main Menu"
 msgstr ""
 
-#: src/ui.rs:392
+#: src/ui.rs:397
 msgid "Show settings (F9)"
 msgstr ""
 
-#: src/ui.rs:422 src/ui.rs:527
+#: src/ui.rs:427 src/ui.rs:532
 msgid "Privacy"
 msgstr ""
 
-#: src/ui.rs:445
+#: src/ui.rs:450
 msgid "Mirror the preview (does not affect other programs)"
 msgstr ""
 
-#: src/ui.rs:451
+#: src/ui.rs:456
 msgid "Take photo (Ctrl+S)"
 msgstr ""
 
-#: src/ui.rs:459 src/ui.rs:2324 src/ui.rs:2394
+#: src/ui.rs:464 src/ui.rs:2385 src/ui.rs:2464
 msgid "Start Preview"
 msgstr ""
 
-#: src/ui.rs:465 src/ui.rs:2321 src/ui.rs:2326
+#: src/ui.rs:470 src/ui.rs:2382 src/ui.rs:2387
 msgid "Preview is off"
 msgstr ""
 
-#: src/ui.rs:467 src/ui.rs:2391
+#: src/ui.rs:472 src/ui.rs:2461
 msgid ""
 "Other programs, such as Teams or Zoom, can use the camera while the preview "
 "is off."
 msgstr ""
 
-#: src/ui.rs:482
+#: src/ui.rs:487
 msgid "Tilt up (Ctrl+↑)"
 msgstr ""
 
-#: src/ui.rs:483
+#: src/ui.rs:488
 msgid "Tilt down (Ctrl+↓)"
 msgstr ""
 
-#: src/ui.rs:484
+#: src/ui.rs:489
 msgid "Pan left (Ctrl+←)"
 msgstr ""
 
-#: src/ui.rs:485
+#: src/ui.rs:490
 msgid "Pan right (Ctrl+→)"
 msgstr ""
 
-#: src/ui.rs:486
+#: src/ui.rs:491
 msgid "Center the camera (Ctrl+Home)"
 msgstr ""
 
-#: src/ui.rs:512
+#: src/ui.rs:517
 msgid "Zoom out (Ctrl+−)"
 msgstr ""
 
-#: src/ui.rs:513
+#: src/ui.rs:518
 msgid "Zoom in (Ctrl++)"
 msgstr ""
 
-#: src/ui.rs:528
+#: src/ui.rs:533
 msgid "Point the camera down. Turn off to return to the previous position."
 msgstr ""
 
-#: src/ui.rs:538
+#: src/ui.rs:543
 msgid "Zoom"
 msgstr ""
 
-#: src/ui.rs:554
+#: src/ui.rs:559
 msgid "Camera Control"
 msgstr ""
 
-#: src/ui.rs:567 src/ui.rs:2216
+#: src/ui.rs:572 src/ui.rs:2260
 msgid "Save Position"
 msgstr ""
 
-#: src/ui.rs:571
+#: src/ui.rs:576
 msgid "Saved Positions"
 msgstr ""
 
-#: src/ui.rs:572
+#: src/ui.rs:577
 msgid "Click to move the camera there"
 msgstr ""
 
-#: src/ui.rs:601
+#: src/ui.rs:606
 msgid "No Insta360 Link Found"
 msgstr ""
 
-#: src/ui.rs:602
+#: src/ui.rs:607
 msgid "Connect the camera with USB. Link Studio connects automatically."
 msgstr ""
 
-#: src/ui.rs:859
+#: src/ui.rs:876
 msgid "Could not zoom: {}"
 msgstr ""
 
-#: src/ui.rs:1041
+#: src/ui.rs:1058
 msgid "Cannot open the camera: {}"
 msgstr ""
 
-#: src/ui.rs:1054
+#: src/ui.rs:1071
 msgid "{} · connected"
 msgstr ""
 
-#: src/ui.rs:1064 src/ui.rs:1812
+#: src/ui.rs:1089 src/ui.rs:1838
 msgid "Profile “{}” applied"
 msgstr ""
 
-#: src/ui.rs:1090
+#: src/ui.rs:1109
 msgid "Not connected"
 msgstr ""
 
-#: src/ui.rs:1093
+#: src/ui.rs:1112
 msgid "The camera was disconnected"
 msgstr ""
 
-#: src/ui.rs:1184
+#: src/ui.rs:1204
 msgid "Tracking"
 msgstr ""
 
-#: src/ui.rs:1186
+#: src/ui.rs:1206
 msgid "Effects"
 msgstr ""
 
-#: src/ui.rs:1188 src/ui.rs:1752
+#: src/ui.rs:1208 src/ui.rs:1778
 msgid "Profiles"
 msgstr ""
 
-#: src/ui.rs:1190 src/ui.rs:1914
+#: src/ui.rs:1210 src/ui.rs:1938
 msgid "Camera"
 msgstr ""
 
-#: src/ui.rs:1230
+#: src/ui.rs:1250
 msgid "Other Settings"
 msgstr ""
 
-#: src/ui.rs:1239
+#: src/ui.rs:1259
 msgid "Reset All Image Settings"
 msgstr ""
 
-#: src/ui.rs:1284 src/ui.rs:1359
+#: src/ui.rs:1304 src/ui.rs:1379
 msgid "Reset to default"
 msgstr ""
 
-#: src/ui.rs:1345
+#: src/ui.rs:1365
 msgid "Exposure compensation"
 msgstr ""
 
-#: src/ui.rs:1346
+#: src/ui.rs:1366
 msgid "Brighter or darker image, in EV steps"
 msgstr ""
 
-#: src/ui.rs:1373 src/ui.rs:1388
+#: src/ui.rs:1393 src/ui.rs:1408
 msgid "Could not change the setting: {}"
 msgstr ""
 
-#: src/ui.rs:1413
+#: src/ui.rs:1433
 msgid "Image settings reset"
 msgstr ""
 
-#: src/ui.rs:1420
+#: src/ui.rs:1440
 msgid "AI Tracking"
 msgstr ""
 
-#: src/ui.rs:1421
+#: src/ui.rs:1441
 msgid ""
 "The camera uses its gimbal to keep you in the picture automatically. It "
 "turns tracking off by itself after 60 seconds with no one in the picture."
 msgstr ""
 
-#: src/ui.rs:1424
+#: src/ui.rs:1444
 msgid "Follow Me"
 msgstr ""
 
-#: src/ui.rs:1425
+#: src/ui.rs:1445
 msgid "Ctrl+T turns tracking on and off"
 msgstr ""
 
-#: src/ui.rs:1429
+#: src/ui.rs:1449
 msgid "Framing"
 msgstr ""
 
-#: src/ui.rs:1430
+#: src/ui.rs:1450
 msgid "How much of you stays in the picture"
 msgstr ""
 
-#: src/ui.rs:1434
+#: src/ui.rs:1454
 msgid "Who to Follow"
 msgstr ""
 
-#: src/ui.rs:1435
+#: src/ui.rs:1455
 msgid "One person"
 msgstr ""
 
-#: src/ui.rs:1435
+#: src/ui.rs:1455
 msgid "Group"
 msgstr ""
 
-#: src/ui.rs:1439
+#: src/ui.rs:1459
 msgid "A special mode is active"
 msgstr ""
 
-#: src/ui.rs:1440
+#: src/ui.rs:1460
 msgid "DeskView, whiteboard or overhead view – often started by a hand gesture"
 msgstr ""
 
-#: src/ui.rs:1445
+#: src/ui.rs:1465
 msgid "Normal View"
 msgstr ""
 
-#: src/ui.rs:1457
+#: src/ui.rs:1477
 msgid "Hand Gestures"
 msgstr ""
 
-#: src/ui.rs:1458
+#: src/ui.rs:1478
 msgid ""
 "The camera recognizes these gestures by itself. They are always on and "
 "cannot be turned off from Linux. Keep your face in the picture and do not "
 "cover it with your hand."
 msgstr ""
 
-#: src/ui.rs:1462
+#: src/ui.rs:1482
 msgid "Open palm"
 msgstr ""
 
-#: src/ui.rs:1462
+#: src/ui.rs:1482
 msgid ""
 "Turns AI tracking on or off. Hold your palm toward the camera next to your "
 "face until the light flashes green."
 msgstr ""
 
-#: src/ui.rs:1463
+#: src/ui.rs:1483
 msgid "L sign"
 msgstr ""
 
-#: src/ui.rs:1463
+#: src/ui.rs:1483
 msgid ""
 "Zoom. Hold the L until the light flashes blue, then move your hand up to "
 "zoom in or down to zoom out."
 msgstr ""
 
-#: src/ui.rs:1464
+#: src/ui.rs:1484
 msgid "Peace sign"
 msgstr ""
 
-#: src/ui.rs:1464
+#: src/ui.rs:1484
 msgid ""
 "Turns whiteboard mode on or off. Needs the recognition markers on the "
 "corners of the whiteboard."
 msgstr ""
 
-#: src/ui.rs:1478
+#: src/ui.rs:1498
 msgid "Ended up in another mode?"
 msgstr ""
 
-#: src/ui.rs:1479
+#: src/ui.rs:1499
 msgid ""
 "Use “Normal View” above, which appears when the camera is in DeskView or "
 "whiteboard mode."
 msgstr ""
 
-#: src/ui.rs:1499
+#: src/ui.rs:1519
 msgid "Could not change the framing: {}"
 msgstr ""
 
-#: src/ui.rs:1509
+#: src/ui.rs:1529
 msgid "Could not change who to follow: {}"
 msgstr ""
 
-#: src/ui.rs:1526 src/ui.rs:1540
+#: src/ui.rs:1546 src/ui.rs:1560
 msgid "Virtual Camera"
 msgstr ""
 
-#: src/ui.rs:1527
+#: src/ui.rs:1547
 msgid ""
 "Sends the picture from Link Studio to other programs, such as Teams, Zoom or "
 "the browser, as “Link Studio Camera”. The preview and the meeting can then "
 "run at the same time."
 msgstr ""
 
-#: src/ui.rs:1530
+#: src/ui.rs:1550
 msgid "Set up the virtual camera"
 msgstr ""
 
-#: src/ui.rs:1533
+#: src/ui.rs:1553
 msgid "Set Up…"
 msgstr ""
 
-#: src/ui.rs:1541
+#: src/ui.rs:1561
 msgid "Keeps running when the window is closed. Quit from the menu to stop it."
 msgstr ""
 
-#: src/ui.rs:1547
+#: src/ui.rs:1567
 msgid "Resolution"
 msgstr ""
 
-#: src/ui.rs:1553
+#: src/ui.rs:1573
 msgid "Remove the virtual camera setup"
 msgstr ""
 
-#: src/ui.rs:1554
+#: src/ui.rs:1574
 msgid "Needs the administrator password"
 msgstr ""
 
-#: src/ui.rs:1557
+#: src/ui.rs:1577
 msgid "Remove…"
 msgstr ""
 
-#: src/ui.rs:1615 src/ui.rs:1705
+#: src/ui.rs:1635 src/ui.rs:1725
 msgid "Restart the computer to finish the setup."
 msgstr ""
 
-#: src/ui.rs:1617
+#: src/ui.rs:1637
 msgid "Installs the v4l2loopback driver. Needs the administrator password."
 msgstr ""
 
-#: src/ui.rs:1631
+#: src/ui.rs:1651
 msgid "Removing the Virtual Camera"
 msgstr ""
 
-#: src/ui.rs:1631
+#: src/ui.rs:1651
 msgid "Setting Up the Virtual Camera"
 msgstr ""
 
-#: src/ui.rs:1634
+#: src/ui.rs:1654
 msgid ""
 "Enter the administrator password when asked. Downloading the driver can take "
 "a few minutes."
 msgstr ""
 
-#: src/ui.rs:1638
+#: src/ui.rs:1658
 msgid "Waiting for the administrator password…"
 msgstr ""
 
-#: src/ui.rs:1654
+#: src/ui.rs:1674
 msgid "Details"
 msgstr ""
 
-#: src/ui.rs:1667 src/ui.rs:2577 src/ui.rs:2606
+#: src/ui.rs:1687 src/ui.rs:2664 src/ui.rs:2688
 msgid "Close"
 msgstr ""
 
-#: src/ui.rs:1696
+#: src/ui.rs:1716
 msgid "The virtual camera setup has been removed"
 msgstr ""
 
-#: src/ui.rs:1703
+#: src/ui.rs:1723
 msgid "The virtual camera is ready"
 msgstr ""
 
-#: src/ui.rs:1708
+#: src/ui.rs:1728
 msgid "Choose “Link Studio Camera” in Teams, Zoom or your browser."
 msgstr ""
 
-#: src/ui.rs:1726
+#: src/ui.rs:1746
 msgid "The setup did not finish"
 msgstr ""
 
-#: src/ui.rs:1727
+#: src/ui.rs:1747
 msgid "See the details below."
 msgstr ""
 
-#: src/ui.rs:1753
+#: src/ui.rs:1779
 msgid ""
 "A profile stores the image and tracking settings. Star a profile to apply it "
 "automatically every time the camera is connected."
 msgstr ""
 
-#: src/ui.rs:1756
+#: src/ui.rs:1782
 msgid "Save current settings as…"
 msgstr ""
 
-#: src/ui.rs:1787
+#: src/ui.rs:1813
 msgid "Applied automatically on connect"
 msgstr ""
 
-#: src/ui.rs:1787
+#: src/ui.rs:1813
 msgid "Click to apply"
 msgstr ""
 
-#: src/ui.rs:1792
+#: src/ui.rs:1818
 msgid "Apply automatically when the camera is connected"
 msgstr ""
 
-#: src/ui.rs:1798
+#: src/ui.rs:1824
 msgid "Delete profile"
 msgstr ""
 
-#: src/ui.rs:1840
+#: src/ui.rs:1866
 msgid "Profile “{}” deleted"
 msgstr ""
 
-#: src/ui.rs:1874
+#: src/ui.rs:1900
 msgid "Profile “{}” saved"
 msgstr ""
 
-#: src/ui.rs:1916
+#: src/ui.rs:1940
 msgid "Model"
 msgstr ""
 
-#: src/ui.rs:1917
+#: src/ui.rs:1941
 msgid "Serial number"
 msgstr ""
 
-#: src/ui.rs:1918
+#: src/ui.rs:1942
 msgid "Firmware"
 msgstr ""
 
-#: src/ui.rs:1919
+#: src/ui.rs:1943
 msgid "Device"
 msgstr ""
 
-#: src/ui.rs:1920
+#: src/ui.rs:1944
 msgid "USB ID"
 msgstr ""
 
-#: src/ui.rs:1925
+#: src/ui.rs:1949
 msgid "Unknown"
 msgstr ""
 
-#: src/ui.rs:1934
+#: src/ui.rs:1958
 msgid "Preview"
 msgstr ""
 
-#: src/ui.rs:1935
+#: src/ui.rs:1959
 msgid ""
 "Only affects the preview and photos in Link Studio. Programs such as Teams "
 "or Zoom choose their own resolution."
 msgstr ""
 
-#: src/ui.rs:1940
+#: src/ui.rs:1964
 msgid "Quality"
 msgstr ""
 
-#: src/ui.rs:1941
+#: src/ui.rs:1965 src/ui.rs:2373
 msgid "Higher quality uses more processing power"
 msgstr ""
 
-#: src/ui.rs:1946
+#: src/ui.rs:1970
 msgid "Start Automatically"
 msgstr ""
 
-#: src/ui.rs:1947
+#: src/ui.rs:1971
 msgid "Start the preview when the camera is connected"
 msgstr ""
 
-#: src/ui.rs:1971
+#: src/ui.rs:1996
 msgid "Gimbal"
 msgstr ""
 
-#: src/ui.rs:1973
+#: src/ui.rs:1998
 msgid "Center the Camera"
 msgstr ""
 
-#: src/ui.rs:1974
+#: src/ui.rs:1999
 msgid "Moves the gimbal back to its middle position"
 msgstr ""
 
-#: src/ui.rs:1976
+#: src/ui.rs:2001
 msgid "Center"
 msgstr ""
 
-#: src/ui.rs:2050
+#: src/ui.rs:2079
 msgid "Could not change AI tracking: {}"
 msgstr ""
 
-#: src/ui.rs:2106
+#: src/ui.rs:2150
 msgid "No saved positions yet"
 msgstr ""
 
-#: src/ui.rs:2130
+#: src/ui.rs:2174
 msgid "Replace with the current position"
 msgstr ""
 
-#: src/ui.rs:2136
+#: src/ui.rs:2180
 msgid "Delete position"
 msgstr ""
 
-#: src/ui.rs:2163
+#: src/ui.rs:2207
 msgid "Position updated"
 msgstr ""
 
-#: src/ui.rs:2198
+#: src/ui.rs:2242
 msgid "AI tracking was turned off to move the camera"
 msgstr ""
 
-#: src/ui.rs:2214
+#: src/ui.rs:2258
 msgid "Position {}"
 msgstr ""
 
-#: src/ui.rs:2216
+#: src/ui.rs:2260
 msgid "Give the current camera position a name."
 msgstr ""
 
-#: src/ui.rs:2218 src/ui.rs:2553
+#: src/ui.rs:2262 src/ui.rs:2623
 msgid "Cancel"
 msgstr ""
 
-#: src/ui.rs:2218
+#: src/ui.rs:2262
 msgid "Save"
 msgstr ""
 
-#: src/ui.rs:2239
+#: src/ui.rs:2283
 msgid "“{}” saved"
 msgstr ""
 
-#: src/ui.rs:2297
+#: src/ui.rs:2347
 msgid "The virtual camera stopped: {}"
 msgstr ""
 
-#: src/ui.rs:2322
+#: src/ui.rs:2371
+msgid "Uses the virtual camera's resolution while it is on"
+msgstr ""
+
+#: src/ui.rs:2383
 msgid ""
 "The virtual camera is still running, so other programs keep getting the "
 "picture."
 msgstr ""
 
-#: src/ui.rs:2334
+#: src/ui.rs:2397
 msgid "Link Studio is still running"
 msgstr ""
 
-#: src/ui.rs:2337
+#: src/ui.rs:2400
 msgid ""
 "The virtual camera stays on. Use the Link Studio status icon to show the "
 "window, turn the virtual camera off or quit."
 msgstr ""
 
-#: src/ui.rs:2339
+#: src/ui.rs:2402
 msgid ""
 "The virtual camera stays on. Open Link Studio again to turn it off, or "
 "choose Quit in its menu."
 msgstr ""
 
-#: src/ui.rs:2379
+#: src/ui.rs:2449
 msgid "The virtual camera stopped"
 msgstr ""
 
-#: src/ui.rs:2385
+#: src/ui.rs:2455
 msgid "The preview stopped"
 msgstr ""
 
-#: src/ui.rs:2394
+#: src/ui.rs:2464
 msgid "Try Again"
 msgstr ""
 
-#: src/ui.rs:2400
+#: src/ui.rs:2470
 msgid "Start the preview to take a photo"
 msgstr ""
 
-#: src/ui.rs:2414
+#: src/ui.rs:2484
 msgid "Photo saved"
 msgstr ""
 
-#: src/ui.rs:2414
+#: src/ui.rs:2484
 msgid "Open"
 msgstr ""
 
-#: src/ui.rs:2425
+#: src/ui.rs:2495
 msgid "Could not save the photo: {}"
 msgstr ""
 
-#: src/ui.rs:2436
+#: src/ui.rs:2506
 msgid ""
 "Control the Insta360 Link webcam on Linux: image, gimbal, AI tracking and "
 "profiles."
 msgstr ""
 
 #. Translators: put your name(s) here to be credited in the About dialog.
-#: src/ui.rs:2440
+#: src/ui.rs:2510
 msgid "translator-credits"
 msgstr ""
 
-#: src/ui.rs:2445
+#: src/ui.rs:2515
 msgid "Camera command mapping"
 msgstr ""
 
-#: src/ui.rs:2454
+#: src/ui.rs:2524
 msgid "General"
 msgstr ""
 
-#: src/ui.rs:2458
+#: src/ui.rs:2528
 msgid "Appearance"
 msgstr ""
 
-#: src/ui.rs:2461
+#: src/ui.rs:2531
 msgid "Style"
 msgstr ""
 
-#: src/ui.rs:2462
+#: src/ui.rs:2532
 msgid "Follow system"
 msgstr ""
 
-#: src/ui.rs:2462
+#: src/ui.rs:2532
 msgid "Light"
 msgstr ""
 
-#: src/ui.rs:2462
+#: src/ui.rs:2532
 msgid "Dark"
 msgstr ""
 
-#: src/ui.rs:2469
+#: src/ui.rs:2539
 msgid "System default"
 msgstr ""
 
-#: src/ui.rs:2477 src/ui.rs:2481
+#: src/ui.rs:2547 src/ui.rs:2551
 msgid "Language"
 msgstr ""
 
-#: src/ui.rs:2478
+#: src/ui.rs:2548
 msgid "“System default” uses the language of your desktop."
 msgstr ""
 
-#: src/ui.rs:2538
+#: src/ui.rs:2608
 msgid "Uninstall Link Studio?"
 msgstr ""
 
-#: src/ui.rs:2539
+#: src/ui.rs:2609
 msgid ""
 "The program and its entry in the app menu will be removed. Photos you have "
 "taken stay in your Pictures folder."
 msgstr ""
 
-#: src/ui.rs:2542
+#: src/ui.rs:2612
 msgid "Also delete saved positions, profiles and settings"
 msgstr ""
 
-#: src/ui.rs:2545
+#: src/ui.rs:2615
 msgid "Also remove the virtual camera setup (needs the administrator password)"
 msgstr ""
 
-#: src/ui.rs:2553
+#: src/ui.rs:2623
 msgid "Uninstall"
 msgstr ""
 
-#: src/ui.rs:2572
+#: src/ui.rs:2642
+msgid "Could not remove the virtual camera setup: {}"
+msgstr ""
+
+#: src/ui.rs:2655
+msgid "Uninstalling failed: {}"
+msgstr ""
+
+#: src/ui.rs:2659
 msgid ""
 "Link Studio and all its settings have been removed. The window will now "
 "close."
 msgstr ""
 
-#: src/ui.rs:2574
+#: src/ui.rs:2661
 msgid "Link Studio has been removed. The window will now close."
 msgstr ""
 
-#: src/ui.rs:2576
+#: src/ui.rs:2663
 msgid "Uninstalled"
 msgstr ""
 
-#: src/ui.rs:2586
-msgid "Uninstalling failed: {}"
-msgstr ""
-
-#: src/ui.rs:2594
+#: src/ui.rs:2676
 msgid "Ctrl + arrow keys"
 msgstr ""
 
-#: src/ui.rs:2594
+#: src/ui.rs:2676
 msgid "Move the camera"
 msgstr ""
 
-#: src/ui.rs:2595
+#: src/ui.rs:2677
 msgid "Ctrl + plus / minus"
 msgstr ""
 
-#: src/ui.rs:2595
+#: src/ui.rs:2677
 msgid "Zoom in / out"
 msgstr ""
 
-#: src/ui.rs:2596
+#: src/ui.rs:2678
 msgid "Center the camera"
 msgstr ""
 
-#: src/ui.rs:2597
+#: src/ui.rs:2679
 msgid "Go to saved position"
 msgstr ""
 
-#: src/ui.rs:2598
+#: src/ui.rs:2680
 msgid "AI tracking on/off"
 msgstr ""
 
-#: src/ui.rs:2599
+#: src/ui.rs:2681
 msgid "Preview on/off"
 msgstr ""
 
-#: src/ui.rs:2600
+#: src/ui.rs:2682
 msgid "Take photo"
 msgstr ""
 
-#: src/ui.rs:2601
+#: src/ui.rs:2683
 msgid "Show/hide settings"
 msgstr ""

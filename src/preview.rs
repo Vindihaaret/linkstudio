@@ -100,6 +100,8 @@ pub struct Frame {
 }
 
 pub enum Event {
+    /// The camera delivered its first frame, so it is awake and streaming.
+    Started,
     Frame(Frame),
     Error(String),
     /// The stream keeps running for the preview, but the virtual camera stopped.
@@ -259,6 +261,7 @@ fn stream(
     stop: &AtomicBool,
     tx: &async_channel::Sender<Event>,
 ) -> io::Result<()> {
+    let mut started = false;
     while !stop.load(Ordering::Relaxed) {
         let mut pfd = libc::pollfd { fd, events: libc::POLLIN, revents: 0 };
         // SAFETY: one valid pollfd.
@@ -288,6 +291,10 @@ fn stream(
         // SAFETY: the driver filled `used` bytes of this mapping before dequeueing it.
         let jpeg = unsafe { std::slice::from_raw_parts(map.ptr as *const u8, used) }.to_vec();
         ioctl(fd, VIDIOC_QBUF, &mut buf)?;
+        if !started {
+            started = true;
+            let _ = tx.force_send(Event::Started);
+        }
 
         // The virtual camera needs every frame; the preview drops frames
         // while the UI is still busy with earlier ones.

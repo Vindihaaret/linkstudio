@@ -28,8 +28,10 @@ const ZOOM_STEP: i32 = 10;
 /// beyond ±2 the image is close to black or white.
 const EXPOSURE_MAX_EV: f64 = 2.0;
 /// The gimbal ignores a tracking command while it is still waking up from its
-/// parked position, so the command is repeated once after this delay.
-const TRACKING_RETRY: Duration = Duration::from_millis(1500);
+/// parked position, so after turning tracking on the app checks every
+/// TRACKING_CHECK whether the camera took it, resending up to TRACKING_ATTEMPTS times.
+const TRACKING_CHECK: Duration = Duration::from_millis(1000);
+const TRACKING_ATTEMPTS: u32 = 6;
 const APPEARANCES: [Appearance; 3] = [Appearance::System, Appearance::Light, Appearance::Dark];
 
 const FRAMINGS: [(u8, &str); 3] = [(1, n_("Head")), (2, n_("Upper body")), (3, n_("Full body"))];
@@ -321,7 +323,10 @@ pub struct App {
     camera: RefCell<Option<Rc<Camera>>>,
     /// Whether the running stream also feeds the virtual camera.
     stream_has_virtual: Cell<bool>,
+    /// Whether the running stream has delivered frames (the camera is awake).
+    stream_live: Cell<bool>,
     virtual_rows: RefCell<Option<VirtualCameraRows>>,
+    quality_row: RefCell<Option<adw::ComboRow>>,
     /// Last state pushed to the status icon, to avoid needless D-Bus updates.
     tray_state: Cell<Option<tray::State>>,
     bound: RefCell<Vec<Bound>>,
@@ -678,7 +683,9 @@ impl App {
             virtual_badge,
             camera: RefCell::new(None),
             stream_has_virtual: Cell::new(false),
+            stream_live: Cell::new(false),
             virtual_rows: RefCell::new(None),
+            quality_row: RefCell::new(None),
             tray_state: Cell::new(None),
             bound: RefCell::new(Vec::new()),
             exposure: RefCell::new(None),
@@ -740,6 +747,7 @@ impl App {
                 }
             }
             let window = app.window.clone();
+            let weak = Rc::downgrade(&app);
             glib::timeout_add_local_once(Duration::from_millis(800), move || {
                 let paintable = gtk::WidgetPaintable::new(Some(&window));
                 let snapshot = gtk::Snapshot::new();
@@ -754,13 +762,22 @@ impl App {
                         eprintln!("screenshot: node={} renderer={}", node.is_some(), renderer.is_some())
                     }
                 }
-                window.close();
+                // Really quit, even while the virtual camera would keep it hidden.
+                if let Some(app) = weak.upgrade() {
+                    app.force_close();
+                }
             });
         });
     }
 
-    pub fn present(&self) {
+    /// Shows the window, and resumes the preview if it was hidden in the background.
+    pub fn present(self: &Rc<Self>) {
         self.window.present();
+        if self.stream_has_virtual.get() {
+            self.show_preview.store(self.wants_preview(), Ordering::Relaxed);
+        } else if self.wants_preview() && self.preview.borrow().is_none() && self.cam().is_some() {
+            self.restart_stream();
+        }
     }
 
     /// Pushes connection, virtual camera and tracking state to the status icon.
@@ -800,14 +817,14 @@ impl App {
 
     fn connect_signals(self: &Rc<Self>) {
         let weak = Rc::downgrade(self);
-        self.preview_toggle.connect_toggled(move |button| {
+        self.preview_toggle.connect_toggled(move |_| {
             let Some(app) = weak.upgrade() else { return };
             if app.updating.get() {
                 return;
             }
             if app.stream_has_virtual.get() {
                 // The stream keeps feeding the virtual camera; only the preview changes.
-                app.show_preview.store(button.is_active(), Ordering::Relaxed);
+                app.show_preview.store(app.wants_preview(), Ordering::Relaxed);
                 app.show_preview_page();
             } else {
                 app.restart_stream();
@@ -1056,6 +1073,14 @@ impl App {
         self.build_sidebar(&cam);
         self.set_connected_ui(true);
 
+        // Start the stream before the startup profile, so tracking in the
+        // profile can wait for the camera to wake up.
+        if self.config.borrow().preview_autostart {
+            self.preview_toggle.set_active(true);
+        } else {
+            self.restart_stream();
+        }
+
         let startup = self.config.borrow().startup_profile.clone();
         if let Some(name) = startup {
             let profile = self.config.borrow().profiles.iter().find(|p| p.name == name).cloned();
@@ -1065,12 +1090,6 @@ impl App {
             }
         }
         self.refresh(&cam);
-
-        if self.config.borrow().preview_autostart {
-            self.preview_toggle.set_active(true);
-        } else {
-            self.restart_stream();
-        }
     }
 
     fn disconnect(self: &Rc<Self>) {
@@ -1131,7 +1150,8 @@ impl App {
         // set), and resets to normal when its stream stops. While a restarted
         // preview is waiting to resume tracking, the reset is expected.
         let mode = cam.mode().ok().flatten();
-        if let (Some(mode), false) = (mode, self.resume_tracking.get()) {
+        let settling = self.resume_tracking.get() || self.tracking_retry.borrow().is_some();
+        if let (Some(mode), false) = (mode, settling) {
             self.tracking_on.set(mode == Mode::Tracking);
         }
         let tracking = self.tracking_on.get();
@@ -1744,6 +1764,12 @@ impl App {
         self.restart_stream();
         self.update_virtual_rows();
         self.sync_tray();
+        // Hidden and nothing left to do: without a status icon there is no way
+        // back to the window, so close for real.
+        let has_tray = TRAY.with(|tray| tray.borrow().is_some());
+        if !on && !self.window.is_visible() && !has_tray {
+            self.force_close();
+        }
     }
 
     fn build_profiles_page(self: &Rc<Self>) -> adw::PreferencesPage {
@@ -1874,7 +1900,7 @@ impl App {
         self.toast(&trf("Profile “{}” saved", &[&name]));
     }
 
-    fn apply_profile(&self, profile: &Profile) {
+    fn apply_profile(self: &Rc<Self>, profile: &Profile) {
         let Some(cam) = self.cam() else { return };
         let values: Vec<(u32, i32)> = profile
             .controls
@@ -1900,9 +1926,7 @@ impl App {
             let _ = cam.set_group_tracking(group);
         }
         if let Some(tracking) = profile.tracking {
-            if cam.set_tracking(tracking).is_ok() {
-                self.tracking_on.set(tracking);
-            }
+            self.set_tracking(tracking);
         }
         self.refresh(&cam);
     }
@@ -1949,6 +1973,7 @@ impl App {
             .build();
         preview.add(&resolution);
         preview.add(&autostart);
+        *self.quality_row.borrow_mut() = Some(resolution.clone());
         page.add(&preview);
 
         let weak = Rc::downgrade(self);
@@ -2043,7 +2068,11 @@ impl App {
         match cam.set_tracking(on) {
             Ok(()) => {
                 self.tracking_on.set(on);
-                if on {
+                if on && self.preview.borrow().is_some() && !self.stream_live.get() {
+                    // Our stream is still waking the camera, which ignores the
+                    // command; send it again once frames arrive.
+                    self.resume_tracking.set(true);
+                } else if on {
                     self.schedule_tracking_retry();
                 }
             }
@@ -2052,17 +2081,32 @@ impl App {
         self.refresh(&cam);
     }
 
+    /// Makes sure a tracking command took effect: 0x01 means tracking runs,
+    /// 0x00 means it was ignored (resend), 0xff means "command received" with
+    /// no more detail (keep watching).
     fn schedule_tracking_retry(self: &Rc<Self>) {
         if let Some(source) = self.tracking_retry.borrow_mut().take() {
             source.remove();
         }
         let weak = Rc::downgrade(self);
-        let source = glib::timeout_add_local_once(TRACKING_RETRY, move || {
-            let Some(app) = weak.upgrade() else { return };
-            app.tracking_retry.borrow_mut().take();
-            if let (true, Some(cam)) = (app.tracking_on.get(), app.cam()) {
+        let attempts = Cell::new(0);
+        let source = glib::timeout_add_local(TRACKING_CHECK, move || {
+            let Some(app) = weak.upgrade() else { return glib::ControlFlow::Break };
+            let (true, Some(cam)) = (app.tracking_on.get(), app.cam()) else {
+                app.tracking_retry.borrow_mut().take();
+                return glib::ControlFlow::Break;
+            };
+            attempts.set(attempts.get() + 1);
+            let mode = cam.mode().ok().flatten();
+            let done = mode == Some(Mode::Tracking) || attempts.get() >= TRACKING_ATTEMPTS;
+            if mode == Some(Mode::Normal) && !done {
                 let _ = cam.set_tracking(true);
             }
+            if done {
+                app.tracking_retry.borrow_mut().take();
+                return glib::ControlFlow::Break;
+            }
+            glib::ControlFlow::Continue
         });
         *self.tracking_retry.borrow_mut() = Some(source);
     }
@@ -2245,6 +2289,11 @@ impl App {
     // ----- Preview -----
 
     /// The virtual camera's device, when it is turned on and set up.
+    /// The preview runs only while it is switched on and the window is shown.
+    fn wants_preview(&self) -> bool {
+        self.preview_toggle.is_active() && self.window.is_visible()
+    }
+
     fn virtual_camera_device(&self) -> Option<PathBuf> {
         self.config.borrow().virtual_camera.then(vcam::find_device).flatten()
     }
@@ -2253,7 +2302,7 @@ impl App {
     /// the preview, the virtual camera, both or neither.
     fn restart_stream(self: &Rc<Self>) {
         let virtual_camera = self.virtual_camera_device();
-        if !self.preview_toggle.is_active() && virtual_camera.is_none() {
+        if !self.wants_preview() && virtual_camera.is_none() {
             self.stop_preview();
             self.show_preview_page();
             return;
@@ -2274,7 +2323,7 @@ impl App {
         let size = if virtual_camera.is_some() { config.virtual_camera_size() } else { config.preview_size() };
         drop(config);
         self.stream_has_virtual.set(virtual_camera.is_some());
-        self.show_preview.store(self.preview_toggle.is_active(), Ordering::Relaxed);
+        self.show_preview.store(self.wants_preview(), Ordering::Relaxed);
         let options = preview::Options {
             device: cam.info.path.clone(),
             size,
@@ -2291,6 +2340,7 @@ impl App {
             while let Ok(event) = rx.recv().await {
                 let Some(app) = weak.upgrade() else { break };
                 match event {
+                    Event::Started => app.stream_started(),
                     Event::Frame(frame) => app.show_frame(frame),
                     Event::Error(message) => app.preview_failed(&message),
                     Event::VirtualCameraError(message) => {
@@ -2306,14 +2356,25 @@ impl App {
         self.preview.borrow_mut().take();
         self.last_jpeg.borrow_mut().take();
         self.stream_has_virtual.set(false);
+        self.stream_live.set(false);
         self.virtual_badge.set_visible(false);
     }
 
     /// Shows the video or the "preview is off" page, and the virtual camera badge.
     fn show_preview_page(&self) {
         let streaming = self.preview.borrow().is_some();
+        // While the virtual camera runs, the stream uses its resolution.
+        if let Some(row) = self.quality_row.borrow().as_ref() {
+            let overridden = streaming && self.stream_has_virtual.get();
+            row.set_sensitive(!overridden);
+            row.set_subtitle(if overridden {
+                tr("Uses the virtual camera's resolution while it is on")
+            } else {
+                tr("Higher quality uses more processing power")
+            });
+        }
         self.virtual_badge.set_visible(streaming && self.stream_has_virtual.get());
-        self.snapshot_button.set_sensitive(streaming);
+        self.snapshot_button.set_sensitive(streaming && self.preview_toggle.is_active());
         if streaming && self.preview_toggle.is_active() {
             self.preview_stack.set_visible_child_name("video");
         } else if streaming {
@@ -2330,6 +2391,8 @@ impl App {
     /// Hides the window instead of closing it, so the virtual camera keeps running.
     fn hide_to_background(&self, window: &adw::ApplicationWindow) {
         window.set_visible(false);
+        // Nobody sees the preview now; keep only the virtual camera going.
+        self.show_preview.store(false, Ordering::Relaxed);
         if let Some(application) = window.application() {
             let notification = gio::Notification::new(tr("Link Studio is still running"));
             let has_tray = TRAY.with(|tray| tray.borrow().is_some());
@@ -2348,17 +2411,24 @@ impl App {
         self.window.close();
     }
 
-    fn show_frame(self: &Rc<Self>, frame: Frame) {
-        if self.preview.borrow().is_none() {
+    /// The camera is streaming again: turn back on tracking it dropped when
+    /// the previous stream stopped. This also runs when no preview is shown.
+    fn stream_started(self: &Rc<Self>) {
+        self.stream_live.set(true);
+        if !self.resume_tracking.take() {
             return;
         }
-        if self.resume_tracking.take() {
-            if let Some(cam) = self.cam() {
-                match cam.set_tracking(true) {
-                    Ok(()) => self.schedule_tracking_retry(),
-                    Err(_) => self.tracking_on.set(false),
-                }
+        if let Some(cam) = self.cam() {
+            match cam.set_tracking(true) {
+                Ok(()) => self.schedule_tracking_retry(),
+                Err(_) => self.tracking_on.set(false),
             }
+        }
+    }
+
+    fn show_frame(&self, frame: Frame) {
+        if self.preview.borrow().is_none() {
+            return;
         }
         let bytes = glib::Bytes::from_owned(frame.rgb);
         let texture = gdk::MemoryTexture::new(
@@ -2563,30 +2633,42 @@ impl App {
             }
             let purge = purge.is_active();
             if remove_virtual.is_visible() && remove_virtual.is_active() {
-                app.stop_preview();
-                vcam::run_privileged(true, |_| {}, |_| {});
-            }
-            match crate::uninstall::uninstall(purge) {
-                Ok(_) => {
-                    let body = if purge {
-                        tr("Link Studio and all its settings have been removed. The window will now close.")
-                    } else {
-                        tr("Link Studio has been removed. The window will now close.")
-                    };
-                    let done = adw::AlertDialog::new(Some(tr("Uninstalled")), Some(body));
-                    done.add_response("close", tr("Close"));
-                    let weak = Rc::downgrade(&app);
-                    done.connect_response(None, move |_, _| {
-                        if let Some(app) = weak.upgrade() {
-                            app.force_close();
-                        }
-                    });
-                    done.present(Some(&app.window));
-                }
-                Err(err) => app.toast(&trf("Uninstalling failed: {}", &[&err])),
+                // The driver can only be unloaded once nothing writes to it.
+                app.set_virtual_camera(false);
+                let weak = Rc::downgrade(&app);
+                vcam::run_privileged(true, |_| {}, move |result| {
+                    let Some(app) = weak.upgrade() else { return };
+                    if let Err(vcam::SetupError::Failed(message)) = result {
+                        app.toast(&trf("Could not remove the virtual camera setup: {}", &[&message]));
+                    }
+                    app.finish_uninstall(purge);
+                });
+            } else {
+                app.finish_uninstall(purge);
             }
         });
         dialog.present(Some(&self.window));
+    }
+
+    fn finish_uninstall(self: &Rc<Self>, purge: bool) {
+        if let Err(err) = crate::uninstall::uninstall(purge) {
+            self.toast(&trf("Uninstalling failed: {}", &[&err]));
+            return;
+        }
+        let body = if purge {
+            tr("Link Studio and all its settings have been removed. The window will now close.")
+        } else {
+            tr("Link Studio has been removed. The window will now close.")
+        };
+        let done = adw::AlertDialog::new(Some(tr("Uninstalled")), Some(body));
+        done.add_response("close", tr("Close"));
+        let weak = Rc::downgrade(self);
+        done.connect_response(None, move |_, _| {
+            if let Some(app) = weak.upgrade() {
+                app.force_close();
+            }
+        });
+        done.present(Some(&self.window));
     }
 
     fn show_shortcuts(&self) {

@@ -1,3 +1,4 @@
+mod autostart;
 mod camera;
 mod config;
 mod i18n;
@@ -25,6 +26,12 @@ fn main() -> glib::ExitCode {
         i18n::set_language(Some(lang));
     }
 
+    // `--minimized` (used at login) starts in the status icon only. GApplication
+    // does not know the flag, so it is taken out before handing over the arguments.
+    let args: Vec<String> = std::env::args().collect();
+    let minimized = std::cell::Cell::new(args.iter().any(|a| a == autostart::MINIMIZED_FLAG));
+    let args: Vec<String> = args.into_iter().filter(|a| a != autostart::MINIMIZED_FLAG).collect();
+
     let app = adw::Application::builder().application_id(APP_ID).build();
 
     app.connect_startup(move |app| {
@@ -41,13 +48,7 @@ fn main() -> glib::ExitCode {
         app.set_accels_for_action("win.preferences", &["<Control>comma"]);
     });
 
-    app.connect_activate(|app| {
-        if let Some(window) = app.active_window() {
-            window.present();
-            return;
-        }
-        ui::App::new(app, None).present();
-    });
+    app.connect_activate(move |app| ui::activate(app, minimized.replace(false)));
 
-    app.run()
+    app.run_with_args(&args)
 }

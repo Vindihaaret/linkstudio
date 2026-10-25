@@ -56,6 +56,8 @@ pub struct Config {
     /// back at the room. Holds where to return to (pan, tilt, zoom).
     pub privacy: bool,
     pub privacy_restore: Option<(i32, i32, i32)>,
+    /// Closing the window keeps Link Studio in the status icon instead of quitting.
+    pub close_to_tray: bool,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -85,6 +87,7 @@ impl Default for Config {
             claude_camera_view: false,
             privacy: false,
             privacy_restore: None,
+            close_to_tray: false,
         }
     }
 }

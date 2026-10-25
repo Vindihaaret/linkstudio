@@ -80,6 +80,23 @@ thread_local! {
     static CURRENT: RefCell<std::rc::Weak<App>> = const { RefCell::new(std::rc::Weak::new()) };
 }
 
+fn has_tray() -> bool {
+    TRAY.with(|tray| tray.borrow().is_some())
+}
+
+/// Opens the window, or brings back the hidden one (from the app menu or a
+/// second launch). With `minimized` (at login) it stays in the status icon.
+pub fn activate(application: &adw::Application, minimized: bool) {
+    if let Some(app) = CURRENT.with(|current| current.borrow().upgrade()) {
+        app.present();
+        return;
+    }
+    let app = App::new(application, None);
+    if !(minimized && has_tray()) {
+        app.present();
+    }
+}
+
 /// Starts the status icon and routes its menu commands to the current window.
 pub fn start_tray(application: &adw::Application) {
     let (tx, rx) = async_channel::unbounded();
@@ -346,6 +363,8 @@ pub struct App {
     stream_has_virtual: Cell<bool>,
     /// Whether the running stream has delivered frames (the camera is awake).
     stream_live: Cell<bool>,
+    /// "Still running" was already shown once for closing to the status icon.
+    hidden_notice_shown: Cell<bool>,
     virtual_rows: RefCell<Option<VirtualCameraRows>>,
     quality_row: RefCell<Option<adw::ComboRow>>,
     /// Snapshot requests from Claude waiting for a frame.
@@ -722,6 +741,7 @@ impl App {
             camera: RefCell::new(None),
             stream_has_virtual: Cell::new(false),
             stream_live: Cell::new(false),
+            hidden_notice_shown: Cell::new(false),
             virtual_rows: RefCell::new(None),
             quality_row: RefCell::new(None),
             claude_pending: RefCell::new(Vec::new()),
@@ -785,7 +805,9 @@ impl App {
         let weak = Rc::downgrade(self);
         glib::timeout_add_local_once(Duration::from_secs(5), move || {
             let Some(app) = weak.upgrade() else { return };
-            if let Some(prefs_page) = page.as_deref().and_then(|p| p.strip_prefix("preferences")) {
+            if page.as_deref() == Some("about") {
+                app.show_about();
+            } else if let Some(prefs_page) = page.as_deref().and_then(|p| p.strip_prefix("preferences")) {
                 let dialog = app.show_preferences();
                 if let Some(name) = prefs_page.strip_prefix('-') {
                     dialog.set_visible_page_name(name);
@@ -956,7 +978,7 @@ impl App {
         let weak = Rc::downgrade(self);
         self.window.connect_close_request(move |window| {
             if let Some(app) = weak.upgrade() {
-                if app.stream_has_virtual.get() {
+                if app.stream_has_virtual.get() || (app.config.borrow().close_to_tray && has_tray()) {
                     app.hide_to_background(window);
                     return glib::Propagation::Stop;
                 }
@@ -2474,14 +2496,23 @@ impl App {
     }
 
     /// Hides the window instead of closing it, so the virtual camera keeps running.
-    fn hide_to_background(&self, window: &adw::ApplicationWindow) {
+    fn hide_to_background(self: &Rc<Self>, window: &adw::ApplicationWindow) {
         window.set_visible(false);
         // Nobody sees the preview now; keep only the virtual camera going.
         self.show_preview.store(false, Ordering::Relaxed);
+        if !self.stream_has_virtual.get() {
+            // Release the camera so other programs can use it directly.
+            self.restart_stream();
+            if self.hidden_notice_shown.replace(true) {
+                return;
+            }
+        }
         if let Some(application) = window.application() {
             let notification = gio::Notification::new(tr("Link Studio is still running"));
-            let has_tray = TRAY.with(|tray| tray.borrow().is_some());
-            notification.set_body(Some(if has_tray {
+            let has_tray = has_tray();
+            notification.set_body(Some(if !self.stream_has_virtual.get() {
+                tr("Link Studio is in the status icon, ready to use. Quit from the icon or with Ctrl+Q.")
+            } else if has_tray {
                 tr("The virtual camera stays on. Use the Link Studio status icon to show the window, turn the virtual camera off or quit.")
             } else {
                 tr("The virtual camera stays on. Open Link Studio again to turn it off, or choose Quit in its menu.")
@@ -2590,6 +2621,11 @@ impl App {
             .application_icon(APP_ID)
             .version(env!("CARGO_PKG_VERSION"))
             .comments(tr("Control the Insta360 Link webcam on Linux: image, gimbal, AI tracking and profiles."))
+            .developer_name("From Norway with Love ❤️")
+            .developers(["Jan Ivar Sørensen"])
+            .copyright("© 2026 Jan Ivar Sørensen")
+            .website("https://github.com/Vindihaaret/linkstudio")
+            .issue_url("https://github.com/Vindihaaret/linkstudio/issues")
             .license_type(gtk::License::Gpl30)
             .build();
         // Translators: put your name(s) here to be credited in the About dialog.
@@ -2621,6 +2657,27 @@ impl App {
         look.add(&style);
         page.add(&look);
 
+        let behaviour = adw::PreferencesGroup::builder().title(tr("Window")).build();
+        let tray_available = has_tray();
+        let on_close = adw::SwitchRow::builder()
+            .title(tr("Keep in the status icon when the window is closed"))
+            .active(self.config.borrow().close_to_tray && tray_available)
+            .sensitive(tray_available)
+            .build();
+        on_close.set_subtitle(if tray_available {
+            tr("Instead of quitting. Link Studio stays ready to use, and other programs can use the camera.")
+        } else {
+            tr("Needs a status icon area. On GNOME, install the AppIndicator extension.")
+        });
+        let login = adw::SwitchRow::builder()
+            .title(tr("Start at login"))
+            .subtitle(tr("Starts in the status icon, without opening the window"))
+            .active(crate::autostart::is_enabled())
+            .build();
+        behaviour.add(&on_close);
+        behaviour.add(&login);
+        page.add(&behaviour);
+
         let languages = i18n::available_languages();
         let mut labels = vec![tr("System default")];
         labels.extend(languages.iter().map(|(_, name)| *name));
@@ -2643,6 +2700,19 @@ impl App {
         dialog.add(&page);
         dialog.add(&self.claude_preferences_page(&dialog));
 
+        let weak = Rc::downgrade(self);
+        on_close.connect_active_notify(move |row| {
+            let Some(app) = weak.upgrade() else { return };
+            app.config.borrow_mut().close_to_tray = row.is_active();
+            app.config.borrow().save();
+        });
+        let weak = Rc::downgrade(self);
+        login.connect_active_notify(move |row| {
+            let Some(app) = weak.upgrade() else { return };
+            if let Err(err) = crate::autostart::set_enabled(row.is_active()) {
+                app.toast(&trf("Could not change start at login: {}", &[&err]));
+            }
+        });
         let weak = Rc::downgrade(self);
         style.connect_selected_notify(move |row| {
             let Some(app) = weak.upgrade() else { return };

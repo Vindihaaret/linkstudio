@@ -44,6 +44,14 @@ Link Studio shows a status icon (StatusNotifierItem) with Show, Virtual
 camera, AI tracking and Quit. KDE Plasma shows it out of the box; GNOME needs
 the [AppIndicator extension](https://extensions.gnome.org/extension/615/appindicator-support/).
 
+Under Preferences → General → Window:
+
+- **Keep in the status icon when the window is closed** – closing the window
+  leaves Link Studio in the status icon, ready to use. The camera is released
+  while the window is hidden, so other programs can use it.
+- **Start at login** – adds an autostart entry that runs `linkstudio --minimized`,
+  which starts in the status icon without opening the window.
+
 ## Claude integration (MCP)
 
 Link Studio includes an [MCP](https://modelcontextprotocol.io) server, so

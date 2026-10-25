@@ -15,6 +15,7 @@ fn installed_files() -> Vec<PathBuf> {
         data.join(format!("applications/{APP_ID}.desktop")),
         data.join(format!("icons/hicolor/scalable/apps/{APP_ID}.svg")),
         data.join(format!("icons/hicolor/symbolic/apps/{APP_ID}-symbolic.svg")),
+        glib::user_config_dir().join(format!("autostart/{APP_ID}.desktop")),
     ]
 }
 

@@ -1,0 +1,73 @@
+# Builds the ready-made program for a release when its tag is pushed.
+#
+# Release steps: create a draft release with the notes
+# (gh release create vX.Y.Z --draft --title "Link Studio X.Y.Z" --notes ...),
+# then push the tag. This workflow builds on Ubuntu 24.04 (the oldest
+# supported GTK and libadwaita, so the program runs there and on anything
+# newer), attaches the package and its checksum, and publishes the draft.
+# The release only becomes visible to the in-app updater once the package
+# is attached.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build, e.g. v0.3.0
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      PACKAGE: linkstudio-x86_64-linux.tar.gz
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libadwaita-1-dev
+
+      - name: Install Rust
+        run: rustup toolchain install stable --profile minimal && rustup default stable
+
+      - name: Build
+        run: cargo build --release --locked
+
+      - name: Package
+        run: |
+          version="$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -n 1)"
+          if [ "v$version" != "$TAG" ]; then
+            echo "Cargo.toml says $version, but the tag is $TAG" >&2
+            exit 1
+          fi
+          mkdir -p dist/linkstudio
+          cp target/release/linkstudio install.sh uninstall.sh LICENSE README.md dist/linkstudio/
+          cp -r data dist/linkstudio/
+          echo "$version" > dist/linkstudio/VERSION
+          tar -C dist -czf "$PACKAGE" linkstudio
+          sha256sum "$PACKAGE" > "$PACKAGE.sha256"
+
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{ env.PACKAGE }}
+
+      - name: Attach to the release and publish it
+        run: |
+          version="${TAG#v}"
+          gh release view "$TAG" >/dev/null 2>&1 ||
+            gh release create "$TAG" --draft --title "Link Studio $version" --generate-notes
+          gh release upload "$TAG" "$PACKAGE" "$PACKAGE.sha256" --clobber
+          gh release edit "$TAG" --draft=false --latest

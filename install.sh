@@ -1,7 +1,11 @@
 #!/bin/sh
-# Builds Link Studio and installs it for the current user under ~/.local.
-# Missing build tools (Rust, a C compiler, GTK 4 and libadwaita development
-# files) are installed first with sudo; Link Studio itself needs no root.
+# Installs Link Studio for the current user under ~/.local.
+#
+# From a release package (linkstudio-x86_64-linux.tar.gz) the ready-made
+# program is installed; only GTK 4 and libadwaita are installed with sudo if
+# they are missing. From the source code Link Studio is built first, and
+# missing build tools (Rust, a C compiler, GTK 4 and libadwaita development
+# files) are installed with sudo. Link Studio itself needs no root.
 set -eu
 
 cd "$(dirname "$0")"
@@ -20,38 +24,62 @@ deps_ok() {
         pkg-config --atleast-version=1.5 libadwaita-1 2>/dev/null
 }
 
-if ! deps_ok; then
-    echo "==> Installing build dependencies (asks for your sudo password)"
-    if command -v zypper >/dev/null; then
-        sudo zypper --non-interactive install rust cargo gcc pkgconf-pkg-config gtk4-devel libadwaita-devel
-    elif command -v dnf >/dev/null; then
-        sudo dnf install -y rust cargo gcc pkgconf-pkg-config gtk4-devel libadwaita-devel
-    elif command -v apt-get >/dev/null; then
-        sudo apt-get install -y cargo rustc gcc pkg-config libgtk-4-dev libadwaita-1-dev
-    elif command -v pacman >/dev/null; then
-        sudo pacman -S --needed --noconfirm rust gcc pkgconf gtk4 libadwaita
+if [ -f VERSION ] && [ -x linkstudio ]; then
+    echo "==> Installing Link Studio $(cat VERSION)"
+    BINARY=linkstudio
+    if ldd "$BINARY" | grep -q "not found"; then
+        echo "==> Installing GTK 4 and libadwaita (asks for your sudo password)"
+        if command -v zypper >/dev/null; then
+            sudo zypper --non-interactive install libgtk-4-1 libadwaita-1-0
+        elif command -v dnf >/dev/null; then
+            sudo dnf install -y gtk4 libadwaita
+        elif command -v apt-get >/dev/null; then
+            sudo apt-get install -y libgtk-4-1 libadwaita-1-0
+        elif command -v pacman >/dev/null; then
+            sudo pacman -S --needed --noconfirm gtk4 libadwaita
+        fi
     fi
-fi
+    if ldd -r "$BINARY" 2>&1 | grep -qE "not found|undefined symbol"; then
+        echo "ERROR: Link Studio needs GTK >= 4.14 and libadwaita >= 1.5, and a C library at least as new"
+        echo "       as Ubuntu 24.04's. Update your system, or build Link Studio from the source code:"
+        echo "       https://github.com/Vindihaaret/linkstudio#build-from-source"
+        exit 1
+    fi
+else
+    if ! deps_ok; then
+        echo "==> Installing build dependencies (asks for your sudo password)"
+        if command -v zypper >/dev/null; then
+            sudo zypper --non-interactive install rust cargo gcc pkgconf-pkg-config gtk4-devel libadwaita-devel
+        elif command -v dnf >/dev/null; then
+            sudo dnf install -y rust cargo gcc pkgconf-pkg-config gtk4-devel libadwaita-devel
+        elif command -v apt-get >/dev/null; then
+            sudo apt-get install -y cargo rustc gcc pkg-config libgtk-4-dev libadwaita-1-dev
+        elif command -v pacman >/dev/null; then
+            sudo pacman -S --needed --noconfirm rust gcc pkgconf gtk4 libadwaita
+        fi
+    fi
 
-if ! rust_ok; then
-    echo "ERROR: Link Studio needs Rust $RUST_MIN or newer (found: $(rustc --version 2>/dev/null || echo none))."
-    echo "       Install a current Rust with https://rustup.rs and run this script again."
-    exit 1
-fi
-if ! deps_ok; then
-    echo "ERROR: Link Studio needs a C compiler, GTK >= 4.14 and libadwaita >= 1.5 with development files."
-    echo "       Install them with your package manager and run this script again."
-    exit 1
-fi
+    if ! rust_ok; then
+        echo "ERROR: Link Studio needs Rust $RUST_MIN or newer (found: $(rustc --version 2>/dev/null || echo none))."
+        echo "       Install a current Rust with https://rustup.rs and run this script again."
+        exit 1
+    fi
+    if ! deps_ok; then
+        echo "ERROR: Link Studio needs a C compiler, GTK >= 4.14 and libadwaita >= 1.5 with development files."
+        echo "       Install them with your package manager and run this script again."
+        exit 1
+    fi
 
-echo "==> Building"
-cargo build --release
+    echo "==> Building"
+    cargo build --release
+    BINARY="${CARGO_TARGET_DIR:-target}/release/linkstudio"
+fi
 
 echo "==> Installing"
 PREFIX="${PREFIX:-$HOME/.local}"
 APP_ID=io.github.linkstudio.LinkStudio
 
-install -Dm755 "${CARGO_TARGET_DIR:-target}/release/linkstudio" "$PREFIX/bin/linkstudio"
+install -Dm755 "$BINARY" "$PREFIX/bin/linkstudio"
 install -Dm644 "data/$APP_ID.desktop" "$PREFIX/share/applications/$APP_ID.desktop"
 install -Dm644 "data/$APP_ID.svg" "$PREFIX/share/icons/hicolor/scalable/apps/$APP_ID.svg"
 install -Dm644 "data/$APP_ID-symbolic.svg" "$PREFIX/share/icons/hicolor/symbolic/apps/$APP_ID-symbolic.svg"

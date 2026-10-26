@@ -49,8 +49,8 @@ status icon and the Claude integration.
 
 * Linux with an Insta360 Link connected over USB
 * GTK ≥ 4.14 and libadwaita ≥ 1.5 (e.g. Fedora 40+, Ubuntu 24.04+, openSUSE Tumbleweed, Arch)
-* Rust ≥ 1.88 to build (the install script installs it if your distribution's version is recent enough;
-  otherwise use [rustup](https://rustup.rs))
+* Only to build from source: Rust ≥ 1.88 (the install script installs it if your distribution's version
+  is recent enough; otherwise use [rustup](https://rustup.rs))
 * Optional: the `v4l2loopback` kernel module for the virtual camera (Link Studio sets it up for you)
 * Optional, GNOME only: the
   [AppIndicator and KStatusNotifierItem Support](https://extensions.gnome.org/extension/615/appindicator-support/)
@@ -58,33 +58,57 @@ status icon and the Claude integration.
 
 ## Installation
 
+On a normal 64-bit PC (x86_64), download the ready-made program from the
+[latest release](https://github.com/Vindihaaret/linkstudio/releases/latest) – about 2 MB:
+
+```bash
+curl -LO https://github.com/Vindihaaret/linkstudio/releases/latest/download/linkstudio-x86_64-linux.tar.gz
+tar -xzf linkstudio-x86_64-linux.tar.gz
+./linkstudio/install.sh
+```
+
+The script installs Link Studio for your user under `~/.local` with a menu entry and icons – no root
+needed. Only if GTK 4 or libadwaita is missing does it install them with your package manager (zypper,
+dnf, apt or pacman) and ask for your sudo password. Afterwards you can delete the downloaded file and the
+`linkstudio` folder.
+
+Start **Link Studio** from the application menu, or run `linkstudio`.
+
+The program is built from this repository's code by GitHub Actions
+([workflow](.github/workflows/release.yml)), on Ubuntu 24.04 so it runs there and on newer
+distributions. To check that a download was built from this repository:
+
+```bash
+gh attestation verify linkstudio-x86_64-linux.tar.gz --repo Vindihaaret/linkstudio
+```
+
+### Build from source
+
+For other processors, or if you prefer to build it yourself:
+
 ```bash
 git clone https://github.com/Vindihaaret/linkstudio.git
 cd linkstudio
 ./install.sh
 ```
 
-The script:
-
-* installs missing build tools with your package manager (zypper, dnf, apt or pacman; asks for your
-  sudo password only then),
-* builds Link Studio and installs it for your user under `~/.local` – no root needed for the app itself,
-* adds a menu entry and icons,
-* offers to delete the build files in `target/` (about 1 GB) afterwards; the program itself is 5 MB.
-
-Start **Link Studio** from the application menu, or run `linkstudio`.
+The script installs missing build tools with your package manager (Rust, a C compiler and the GTK 4 and
+libadwaita development files – a few hundred MB; asks for your sudo password only then), builds Link
+Studio and installs it the same way. Afterwards it offers to delete the build files in `target/` (about
+1 GB); the program itself is 5 MB.
 
 ### Update
 
 Link Studio looks for a new release on GitHub once a month (turn it off under **Preferences → General →
 Updates**), and you can check yourself with **Menu → Check for Updates …**. When there is a new version
-you see what is new and can choose **Update Now**: Link Studio downloads the release, checks that it is
-the expected version, builds it with its `install.sh` and installs it into `~/.local` – no password
-needed. Building takes a few minutes; the build files (about 1 GB) are deleted again
-afterwards, so only the 5 MB program stays. Restart Link Studio afterwards.
+you see what is new and can choose **Update Now**: Link Studio downloads the ready-made program (about
+2 MB), checks its checksum and version, and installs it into `~/.local` – no password needed, done in
+seconds. On other processors, or for a release without a ready-made program, it downloads the source
+code and builds it instead; that takes a few minutes, and the build files (about 1 GB) are deleted again
+afterwards. Restart Link Studio afterwards.
 
 The check uses GitHub's public API; nothing about you is sent. If you run Link Studio from a source
-folder, update with `git pull` and `./install.sh` instead.
+folder (`cargo run`), update with `git pull` instead.
 
 ### Uninstall
 
@@ -260,6 +284,12 @@ linkstudio mcp                 # the MCP server (normally started by Claude)
 sidebar page, `preferences`, `preferences-claude` or `about`) to a PNG and quits – GNOME on Wayland does
 not let other programs capture windows. The screenshots in `docs/screenshots` were made this way with the
 preview off.
+
+To make a release: bump `version` in `Cargo.toml`, commit and push, create a draft release with the
+notes (`gh release create vX.Y.Z --draft --title "Link Studio X.Y.Z" --notes …`), then push the tag
+`vX.Y.Z`. The [release workflow](.github/workflows/release.yml) builds the program, attaches it with its
+checksum and build attestation, and publishes the release – so the in-app updater only sees it once the
+download is there.
 
 ## Camera notes
 

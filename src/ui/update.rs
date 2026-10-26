@@ -22,15 +22,36 @@ const CHECK_INTERVAL_SECS: i64 = 30 * 24 * 3600;
 const FIRST_CHECK_DELAY: Duration = Duration::from_secs(60);
 const RECHECK_EVERY: Duration = Duration::from_secs(6 * 3600);
 
-/// Downloads a release, checks it is the expected version, and runs its
-/// install.sh, then deletes the source and build files again.
-/// Arguments: $1 = tag (e.g. v0.2.0), $2 = version (e.g. 0.2.0).
+/// Downloads a release and installs it with its install.sh. On x86_64 that is
+/// the ready-made program the release workflow attaches, checked against its
+/// checksum; elsewhere, or for a release without one, the source code is built
+/// and the source and build files are deleted again afterwards.
+/// Arguments: $1 = tag (e.g. v0.3.0), $2 = version (e.g. 0.3.0).
 const INSTALL_SCRIPT: &str = r#"set -eu
 dir="$(mktemp -d "${TMPDIR:-/tmp}/linkstudio-update-XXXXXX")"
 # The build files (about 1 GB) are only needed while building, so they go too.
 build="${XDG_CACHE_HOME:-$HOME/.cache}/linkstudio/build"
 trap 'rm -rf "$dir" "$build"; rmdir "${build%/build}" 2>/dev/null || true' EXIT
+package="linkstudio-$(uname -m)-linux.tar.gz"
+base="https://github.com/Vindihaaret/linkstudio/releases/download/$1"
 echo "Downloading $1 …"
+if curl -fsL --max-time 300 "$base/$package" -o "$dir/package.tar.gz"; then
+    curl -fsSL --max-time 60 "$base/$package.sha256" -o "$dir/package.sha256"
+    expected="$(cut -d' ' -f1 "$dir/package.sha256")"
+    actual="$(sha256sum "$dir/package.tar.gz" | cut -d' ' -f1)"
+    if [ "$expected" != "$actual" ]; then
+        echo "The download is damaged (wrong checksum)." >&2
+        exit 1
+    fi
+    tar -xzf "$dir/package.tar.gz" -C "$dir" --no-same-owner
+    if [ "$(cat "$dir/linkstudio/VERSION" 2>/dev/null)" != "$2" ]; then
+        echo "The download is not Link Studio $2." >&2
+        exit 1
+    fi
+    sh "$dir/linkstudio/install.sh"
+    exit 0
+fi
+echo "No ready-made program for this computer; building from source …"
 curl -fsSL --max-time 300 "https://github.com/Vindihaaret/linkstudio/archive/refs/tags/$1.tar.gz" -o "$dir/source.tar.gz"
 tar -xzf "$dir/source.tar.gz" -C "$dir" --no-same-owner
 src="$(find "$dir" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
@@ -288,7 +309,7 @@ impl App {
     fn install_update(self: &Rc<Self>, release: &Release) {
         let dialog = adw::AlertDialog::new(
             Some(&trf("Updating to Link Studio {}", &[&release.version])),
-            Some(tr("Downloading and building the new version. This takes a few minutes the first time.")),
+            Some(tr("Downloading and installing the new version. If it has to be built on this computer, this takes a few minutes.")),
         );
         let spinner = gtk::Spinner::builder().spinning(true).build();
         let status = gtk::Label::builder()

@@ -26,6 +26,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
       GH_TOKEN: ${{ github.token }}
@@ -38,7 +39,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-4-dev libadwaita-1-dev
+          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 libgtk-4-dev libadwaita-1-dev
 
       - name: Install Rust
         run: rustup toolchain install stable --profile minimal && rustup default stable

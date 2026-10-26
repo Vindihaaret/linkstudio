@@ -31,7 +31,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       PACKAGE: linkstudio-x86_64-linux.tar.gz
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ env.TAG }}
 
@@ -60,7 +60,7 @@ jobs:
           tar -C dist -czf "$PACKAGE" linkstudio
           sha256sum "$PACKAGE" > "$PACKAGE.sha256"
 
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v4
         with:
           subject-path: ${{ env.PACKAGE }}
 

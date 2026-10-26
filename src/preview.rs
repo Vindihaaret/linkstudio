@@ -9,6 +9,7 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread::JoinHandle;
+use std::time::{Duration, Instant};
 
 use zune_core::colorspace::ColorSpace;
 use zune_core::options::DecoderOptions;
@@ -24,6 +25,11 @@ const FIELD_ANY: u32 = 0;
 const PIX_FMT_MJPEG: u32 = u32::from_le_bytes(*b"MJPG");
 const BUFFER_COUNT: u32 = 4;
 const POLL_TIMEOUT_MS: i32 = 200;
+/// A sleeping camera takes a few seconds to deliver its first frame.
+const FIRST_FRAME_TIMEOUT: Duration = Duration::from_secs(10);
+/// No frames for this long means the stream is stuck, e.g. after the computer
+/// woke from sleep.
+const STALL_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_DISPLAY_WIDTH: i32 = 1920;
 /// Pictures for Claude: about the largest size it reads without scaling.
 const SNAPSHOT_WIDTH: usize = 1280;
@@ -106,7 +112,9 @@ pub enum Event {
     /// The camera delivered its first frame, so it is awake and streaming.
     Started,
     Frame(Frame),
-    Error(String),
+    /// The stream stopped. `retry` is set when trying again later may work:
+    /// another program had the camera, or the stream got stuck.
+    Error { message: String, retry: bool },
     /// The stream keeps running for the preview, but the virtual camera stopped.
     VirtualCameraError(String),
     /// A picture asked for through `Options::snapshot`, unmirrored, as JPEG.
@@ -138,7 +146,8 @@ impl Preview {
         let thread = std::thread::spawn(move || {
             if let Err(err) = capture(&options, &thread_stop, &tx) {
                 // Never block here: the UI thread may be joining this thread.
-                let _ = tx.force_send(Event::Error(describe(&err)));
+                let retry = matches!(err.raw_os_error(), Some(libc::EBUSY) | Some(libc::ETIMEDOUT));
+                let _ = tx.force_send(Event::Error { message: describe(&err), retry });
             }
         });
         Self { stop, thread: Some(thread) }
@@ -160,6 +169,7 @@ fn describe(err: &io::Error) -> String {
             tr("The camera is being used by another program. Close it, or try again when it is done.").into()
         }
         Some(libc::ENODEV) | Some(libc::ENOENT) => tr("The camera was disconnected.").into(),
+        Some(libc::ETIMEDOUT) => tr("The camera stopped sending pictures.").into(),
         _ => trf("The preview stopped: {}", &[err]),
     }
 }
@@ -269,7 +279,12 @@ fn stream(
     tx: &async_channel::Sender<Event>,
 ) -> io::Result<()> {
     let mut started = false;
+    let mut last_frame = Instant::now();
     while !stop.load(Ordering::Relaxed) {
+        let limit = if started { STALL_TIMEOUT } else { FIRST_FRAME_TIMEOUT };
+        if last_frame.elapsed() > limit {
+            return Err(io::Error::from_raw_os_error(libc::ETIMEDOUT));
+        }
         let mut pfd = libc::pollfd { fd, events: libc::POLLIN, revents: 0 };
         // SAFETY: one valid pollfd.
         let ready = unsafe { libc::poll(&mut pfd, 1, POLL_TIMEOUT_MS) };
@@ -298,6 +313,7 @@ fn stream(
         // SAFETY: the driver filled `used` bytes of this mapping before dequeueing it.
         let jpeg = unsafe { std::slice::from_raw_parts(map.ptr as *const u8, used) }.to_vec();
         ioctl(fd, VIDIOC_QBUF, &mut buf)?;
+        last_frame = Instant::now();
         if !started {
             started = true;
             let _ = tx.force_send(Event::Started);

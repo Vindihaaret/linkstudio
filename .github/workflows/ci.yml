@@ -1,0 +1,32 @@
+# Checks every push and pull request: lints, tests and the install scripts.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libadwaita-1-dev gettext
+
+      - name: Install Rust
+        run: rustup toolchain install stable --profile minimal --component clippy && rustup default stable
+
+      - name: Lint
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --locked
+
+      - name: Check scripts and translations
+        run: |
+          for script in install.sh uninstall.sh data/*.sh po/update-po.sh; do sh -n "$script"; done
+          for po in po/*.po; do msgfmt --check --output-file=/dev/null "$po"; done

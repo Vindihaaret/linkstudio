@@ -25,6 +25,8 @@ pub use claude::{register as register_claude, unregister_from_claude_code};
 pub use update::start_auto_checks as start_update_checks;
 
 const REFRESH_INTERVAL: Duration = Duration::from_millis(1000);
+/// How often a stream that another program blocks is tried again.
+const STREAM_RETRY_INTERVAL: Duration = Duration::from_secs(3);
 const NUDGE_INTERVAL: Duration = Duration::from_millis(90);
 const ARCSEC_PER_DEGREE: i32 = 3600;
 const ZOOM_MIN: f64 = 100.0;
@@ -401,6 +403,15 @@ pub struct App {
     nudge_source: RefCell<Option<glib::SourceId>>,
     refresh_source: RefCell<Option<glib::SourceId>>,
     tracking_retry: RefCell<Option<glib::SourceId>>,
+    /// Pending restart of a stream that stopped because another program had
+    /// the camera, or because it got stuck.
+    stream_retry: RefCell<Option<glib::SourceId>>,
+    /// While a retried stream has not delivered a frame yet, the "waiting"
+    /// page stays up (title and description) instead of a blank preview.
+    stream_waiting: RefCell<Option<(String, String)>>,
+    /// Tracking was on when the camera was disconnected; turn it back on when
+    /// it comes back.
+    reconnect_tracking: Cell<bool>,
 }
 
 fn icon_button(icon: &str, tooltip: &str) -> gtk::Button {
@@ -772,6 +783,9 @@ impl App {
             nudge_source: RefCell::new(None),
             refresh_source: RefCell::new(None),
             tracking_retry: RefCell::new(None),
+            stream_retry: RefCell::new(None),
+            stream_waiting: RefCell::new(None),
+            reconnect_tracking: Cell::new(false),
         });
         CURRENT.with(|current| *current.borrow_mut() = Rc::downgrade(&app));
         app.connect_signals();
@@ -1148,6 +1162,10 @@ impl App {
         self.build_sidebar(&cam);
         self.set_connected_ui(true);
         self.restore_privacy(&cam);
+        // The stream below turns tracking back on once it delivers frames;
+        // never in privacy mode, where tracking would turn the camera up.
+        let tracking = self.reconnect_tracking.take() && !self.config.borrow().privacy;
+        self.tracking_on.set(tracking);
 
         // Start the stream before the startup profile, so tracking in the
         // profile can wait for the camera to wake up.
@@ -1169,6 +1187,8 @@ impl App {
     }
 
     fn disconnect(self: &Rc<Self>) {
+        self.cancel_stream_retry();
+        self.stream_waiting.borrow_mut().take();
         self.stop_preview();
         self.stop_nudge();
         *self.camera.borrow_mut() = None;
@@ -1176,6 +1196,7 @@ impl App {
         self.exposure.borrow_mut().take();
         *self.tracking.borrow_mut() = None;
         self.privacy_restore.set(None);
+        self.reconnect_tracking.set(self.tracking_on.get());
         self.tracking_on.set(false);
         self.resume_tracking.set(false);
         self.updating.set(true);
@@ -1226,7 +1247,9 @@ impl App {
         // set), and resets to normal when its stream stops. While a restarted
         // preview is waiting to resume tracking, the reset is expected.
         let mode = cam.mode().ok().flatten();
-        let settling = self.resume_tracking.get() || self.tracking_retry.borrow().is_some();
+        let settling = self.resume_tracking.get()
+            || self.tracking_retry.borrow().is_some()
+            || self.stream_retry.borrow().is_some();
         if let (Some(mode), false) = (mode, settling) {
             self.tracking_on.set(mode == Mode::Tracking);
         }
@@ -2410,6 +2433,8 @@ impl App {
     /// Starts, restarts or stops the camera stream to match what is wanted:
     /// the preview, the virtual camera, both or neither.
     fn restart_stream(self: &Rc<Self>) {
+        self.cancel_stream_retry();
+        self.stream_waiting.borrow_mut().take();
         let virtual_camera = self.virtual_camera_device();
         if !self.wants_preview() && virtual_camera.is_none() {
             self.stop_preview();
@@ -2453,7 +2478,7 @@ impl App {
                     Event::Started => app.stream_started(),
                     Event::Snapshot { jpeg, width, height } => app.claude_snapshot_ready(jpeg, width, height),
                     Event::Frame(frame) => app.show_frame(frame),
-                    Event::Error(message) => app.preview_failed(&message),
+                    Event::Error { message, retry } => app.preview_failed(&message, retry),
                     Event::VirtualCameraError(message) => {
                         app.toast(&trf("The virtual camera stopped: {}", &[&message]));
                         app.virtual_badge.set_visible(false);
@@ -2486,7 +2511,9 @@ impl App {
         }
         self.virtual_badge.set_visible(streaming && self.stream_has_virtual.get());
         self.snapshot_button.set_sensitive(streaming && self.preview_toggle.is_active());
-        if streaming && self.preview_toggle.is_active() {
+        if let Some((title, description)) = self.stream_waiting.borrow().as_ref() {
+            self.show_preview_status(title, Some(description));
+        } else if streaming && self.preview_toggle.is_active() {
             self.preview_stack.set_visible_child_name("video");
         } else if streaming {
             self.show_preview_status(
@@ -2535,6 +2562,9 @@ impl App {
     /// the previous stream stopped. This also runs when no preview is shown.
     fn stream_started(self: &Rc<Self>) {
         self.stream_live.set(true);
+        if self.stream_waiting.borrow_mut().take().is_some() {
+            self.show_preview_page();
+        }
         self.claude_stream_started();
         if !self.resume_tracking.take() {
             return;
@@ -2563,9 +2593,32 @@ impl App {
         *self.last_jpeg.borrow_mut() = Some(frame.jpeg);
     }
 
-    fn preview_failed(&self, message: &str) {
+    fn preview_failed(self: &Rc<Self>, message: &str, retry: bool) {
         let had_virtual = self.stream_has_virtual.get();
         self.stop_preview();
+        if retry && (self.wants_preview() || self.virtual_camera_device().is_some()) {
+            // Keep the preview and the virtual camera switched on and start
+            // again by itself once the camera is free or awake again.
+            let waiting = (
+                tr("Waiting for the camera").to_owned(),
+                format!("{message} {}", tr("Link Studio tries again by itself.")),
+            );
+            self.show_preview_status(&waiting.0, Some(&waiting.1));
+            let weak = Rc::downgrade(self);
+            let source = glib::timeout_add_local_once(STREAM_RETRY_INTERVAL, move || {
+                let Some(app) = weak.upgrade() else { return };
+                app.stream_retry.borrow_mut().take();
+                app.restart_stream();
+                // Keep showing the waiting page until the first frame arrives.
+                if app.preview.borrow().is_some() {
+                    *app.stream_waiting.borrow_mut() = Some(waiting);
+                    app.show_preview_page();
+                }
+            });
+            self.cancel_stream_retry();
+            *self.stream_retry.borrow_mut() = Some(source);
+            return;
+        }
         if had_virtual {
             self.toast(tr("The virtual camera stopped"));
         }
@@ -2574,6 +2627,12 @@ impl App {
         self.preview_toggle.set_active(false);
         self.updating.set(false);
         self.show_preview_status(tr("The preview stopped"), Some(message));
+    }
+
+    fn cancel_stream_retry(&self) {
+        if let Some(source) = self.stream_retry.borrow_mut().take() {
+            source.remove();
+        }
     }
 
     fn show_preview_status(&self, title: &str, description: Option<&str>) {

@@ -1,6 +1,6 @@
 [package]
 name = "linkstudio"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 description = "Control panel for the Insta360 Link webcam on Linux"
 license = "GPL-3.0-or-later"

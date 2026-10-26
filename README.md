@@ -69,7 +69,8 @@ The script:
 * installs missing build tools with your package manager (zypper, dnf, apt or pacman; asks for your
   sudo password only then),
 * builds Link Studio and installs it for your user under `~/.local` – no root needed for the app itself,
-* adds a menu entry and icons.
+* adds a menu entry and icons,
+* offers to delete the build files in `target/` (about 1 GB) afterwards; the program itself is 5 MB.
 
 Start **Link Studio** from the application menu, or run `linkstudio`.
 
@@ -79,8 +80,8 @@ Link Studio looks for a new release on GitHub once a month (turn it off under **
 Updates**), and you can check yourself with **Menu → Check for Updates …**. When there is a new version
 you see what is new and can choose **Update Now**: Link Studio downloads the release, checks that it is
 the expected version, builds it with its `install.sh` and installs it into `~/.local` – no password
-needed. Building takes a few minutes the first time; later updates reuse the build cache in
-`~/.cache/linkstudio`. Restart Link Studio afterwards.
+needed. Building takes a few minutes; the build files (about 1 GB) are deleted again
+afterwards, so only the 5 MB program stays. Restart Link Studio afterwards.
 
 The check uses GitHub's public API; nothing about you is sent. If you run Link Studio from a source
 folder, update with `git pull` and `./install.sh` instead.
@@ -231,7 +232,6 @@ Tools: `get_status`, `take_snapshot`, `set_image_settings`, `reset_image_setting
 | `~/.local/bin/linkstudio` | The program |
 | `~/.config/linkstudio/config.json` | Settings, saved positions and profiles |
 | `~/.config/autostart/io.github.linkstudio.LinkStudio.desktop` | Start at login (when turned on) |
-| `~/.cache/linkstudio/build/` | Build cache for updates (safe to delete) |
 | `~/Pictures/Link Studio/` | Photos |
 | `/etc/modprobe.d/linkstudio-v4l2loopback.conf`, `/etc/modules-load.d/linkstudio-v4l2loopback.conf` | Virtual camera setup |
 

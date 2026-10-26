@@ -23,11 +23,13 @@ const FIRST_CHECK_DELAY: Duration = Duration::from_secs(60);
 const RECHECK_EVERY: Duration = Duration::from_secs(6 * 3600);
 
 /// Downloads a release, checks it is the expected version, and runs its
-/// install.sh with a build cache so later updates compile faster.
+/// install.sh, then deletes the source and build files again.
 /// Arguments: $1 = tag (e.g. v0.2.0), $2 = version (e.g. 0.2.0).
 const INSTALL_SCRIPT: &str = r#"set -eu
 dir="$(mktemp -d "${TMPDIR:-/tmp}/linkstudio-update-XXXXXX")"
-trap 'rm -rf "$dir"' EXIT
+# The build files (about 1 GB) are only needed while building, so they go too.
+build="${XDG_CACHE_HOME:-$HOME/.cache}/linkstudio/build"
+trap 'rm -rf "$dir" "$build"; rmdir "${build%/build}" 2>/dev/null || true' EXIT
 echo "Downloading $1 …"
 curl -fsSL --max-time 300 "https://github.com/Vindihaaret/linkstudio/archive/refs/tags/$1.tar.gz" -o "$dir/source.tar.gz"
 tar -xzf "$dir/source.tar.gz" -C "$dir" --no-same-owner
@@ -36,9 +38,10 @@ if [ ! -f "$src/install.sh" ] || ! grep -q "^version = \"$2\"$" "$src/Cargo.toml
     echo "The download is not Link Studio $2." >&2
     exit 1
 fi
-export CARGO_TARGET_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/linkstudio/build"
+export CARGO_TARGET_DIR="$build"
 export PATH="$HOME/.cargo/bin:$PATH"
 sh "$src/install.sh"
+echo "Removing build files …"
 "#;
 
 #[derive(Clone)]

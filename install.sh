@@ -60,6 +60,22 @@ gtk4-update-icon-cache -q -t "$PREFIX/share/icons/hicolor" 2>/dev/null || true
 update-desktop-database -q "$PREFIX/share/applications" 2>/dev/null || true
 
 echo "Link Studio is installed. Start it from the app menu or run: linkstudio"
+
+# The build files are only needed to rebuild faster. Ask when run by hand;
+# remove them when the in-app updater built into its cache (Link Studio
+# 0.2.0's updater does not clean up after itself).
+UPDATE_BUILD="${XDG_CACHE_HOME:-$HOME/.cache}/linkstudio/build"
+if [ "${CARGO_TARGET_DIR:-}" = "$UPDATE_BUILD" ]; then
+    rm -rf "$UPDATE_BUILD"
+elif [ -z "${CARGO_TARGET_DIR:-}" ] && [ -d target ] && [ -t 0 ]; then
+    size="$(du -sh target 2>/dev/null | cut -f1)"
+    printf 'Remove the build files in %s/target (%s)? They are only needed to rebuild faster. [Y/n] ' "$(pwd)" "$size"
+    read -r answer || answer=n
+    case "$answer" in
+        [nN]*) ;;
+        *) rm -rf target && echo "Build files removed." ;;
+    esac
+fi
 case ":$PATH:" in
     *":$PREFIX/bin:"*) ;;
     *) echo "Note: $PREFIX/bin is not on your PATH; the app menu entry works regardless." ;;

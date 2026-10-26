@@ -34,6 +34,8 @@ pub fn uninstall(purge: bool) -> io::Result<usize> {
             Err(err) => return Err(err),
         }
     }
+    // Build files left by updates in Link Studio 0.2.0.
+    let _ = fs::remove_dir_all(glib::user_cache_dir().join("linkstudio"));
     if purge {
         match fs::remove_dir_all(config_dir()) {
             Ok(()) => {}

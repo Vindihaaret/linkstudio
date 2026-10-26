@@ -40,6 +40,7 @@ fn main() -> glib::ExitCode {
         ui::apply_appearance(config.appearance);
         ui::start_tray(app);
         ui::register_claude(app);
+        ui::start_update_checks(app);
 
         let quit = gio::ActionEntry::builder("quit").activate(|app: &adw::Application, _, _| app.quit()).build();
         app.add_action_entries([quit]);

@@ -19,8 +19,10 @@ use crate::{tray, vcam};
 use crate::APP_ID;
 
 pub mod claude;
+mod update;
 
 pub use claude::{register as register_claude, unregister_from_claude_code};
+pub use update::start_auto_checks as start_update_checks;
 
 const REFRESH_INTERVAL: Duration = Duration::from_millis(1000);
 const NUDGE_INTERVAL: Duration = Duration::from_millis(90);
@@ -432,11 +434,11 @@ impl App {
         let menu = gio::Menu::new();
         menu.append(Some(tr("Preferences")), Some("win.preferences"));
         menu.append(Some(tr("Keyboard Shortcuts")), Some("win.shortcuts"));
+        menu.append(Some(tr("Check for Updates…")), Some("win.check-update"));
         menu.append(Some(tr("About Link Studio")), Some("win.about"));
-        let removal = gio::Menu::new();
-        removal.append(Some(tr("Uninstall Link Studio…")), Some("win.uninstall"));
-        removal.append(Some(tr("Quit")), Some("app.quit"));
-        menu.append_section(None, &removal);
+        let quit = gio::Menu::new();
+        quit.append(Some(tr("Quit")), Some("app.quit"));
+        menu.append_section(None, &quit);
         let menu_button = gtk::MenuButton::builder()
             .icon_name("open-menu-symbolic")
             .menu_model(&menu)
@@ -807,6 +809,8 @@ impl App {
             let Some(app) = weak.upgrade() else { return };
             if page.as_deref() == Some("about") {
                 app.show_about();
+            } else if page.as_deref() == Some("update-check") {
+                app.check_for_updates(true);
             } else if let Some(prefs_page) = page.as_deref().and_then(|p| p.strip_prefix("preferences")) {
                 let dialog = app.show_preferences();
                 if let Some(name) = prefs_page.strip_prefix('-') {
@@ -819,7 +823,7 @@ impl App {
             }
             let window = app.window.clone();
             let weak = Rc::downgrade(&app);
-            glib::timeout_add_local_once(Duration::from_millis(800), move || {
+            glib::timeout_add_local_once(Duration::from_millis(2500), move || {
                 let paintable = gtk::WidgetPaintable::new(Some(&window));
                 let snapshot = gtk::Snapshot::new();
                 paintable.snapshot(&snapshot, window.width() as f64, window.height() as f64);
@@ -1015,10 +1019,10 @@ impl App {
             })
             .build();
         let weak = Rc::downgrade(self);
-        let uninstall = gio::ActionEntry::builder("uninstall")
+        let check_update = gio::ActionEntry::builder("check-update")
             .activate(move |_: &adw::ApplicationWindow, _, _| {
                 if let Some(app) = weak.upgrade() {
-                    app.ask_uninstall();
+                    app.check_for_updates(true);
                 }
             })
             .build();
@@ -1030,7 +1034,7 @@ impl App {
                 }
             })
             .build();
-        self.window.add_action_entries([preferences, about, shortcuts, uninstall]);
+        self.window.add_action_entries([preferences, about, shortcuts, check_update]);
     }
 
     fn add_shortcut(self: &Rc<Self>, controller: &gtk::ShortcutController, accel: &str, action: impl Fn(&Rc<App>) + 'static) {
@@ -2697,7 +2701,31 @@ impl App {
             .build();
         language_group.add(&language);
         page.add(&language_group);
+        page.add(&self.update_preferences_group());
+
+        // Uninstalling lives at the bottom here, not in the main menu, so it is a deliberate choice.
+        let removal = adw::PreferencesGroup::new();
+        let uninstall_row = adw::ActionRow::builder()
+            .title(tr("Uninstall Link Studio"))
+            .subtitle(tr("Removes the program and its menu entry, and optionally the settings and the virtual camera setup."))
+            .build();
+        let uninstall = gtk::Button::builder()
+            .label(tr("Uninstall"))
+            .valign(gtk::Align::Center)
+            .css_classes(["destructive-action"])
+            .build();
+        uninstall_row.add_suffix(&uninstall);
+        removal.add(&uninstall_row);
+        page.add(&removal);
         dialog.add(&page);
+        let weak = Rc::downgrade(self);
+        let prefs = dialog.clone();
+        uninstall.connect_clicked(move |_| {
+            prefs.close();
+            if let Some(app) = weak.upgrade() {
+                app.ask_uninstall();
+            }
+        });
         dialog.add(&self.claude_preferences_page(&dialog));
 
         let weak = Rc::downgrade(self);

@@ -39,6 +39,8 @@ pub struct Config {
     pub startup_profile: Option<String>,
     pub preview_autostart: bool,
     pub preview_mirror: bool,
+    /// Rule-of-thirds lines over the preview.
+    pub preview_grid: bool,
     pub preview_height: u32,
     pub imported_webcamcontrol: bool,
     /// Language code, or `None` to follow the desktop.
@@ -83,6 +85,7 @@ impl Default for Config {
             startup_profile: None,
             preview_autostart: true,
             preview_mirror: false,
+            preview_grid: false,
             preview_height: 720,
             imported_webcamcontrol: false,
             language: None,

@@ -146,6 +146,34 @@ fn executable() -> String {
         .unwrap_or_else(|| "linkstudio".into())
 }
 
+/// The card at the top of the Claude page that says what Claude may do right
+/// now, and the function that updates it.
+fn access_hero() -> (gtk::Box, impl Fn(bool, bool) + Clone + 'static) {
+    let hero = gtk::Box::builder().spacing(12).css_classes(["status-hero"]).build();
+    let icon = gtk::Image::builder().css_classes(["status-hero-icon"]).build();
+    let title = gtk::Label::builder().xalign(0.0).wrap(true).css_classes(["heading"]).build();
+    let detail = gtk::Label::builder().xalign(0.0).wrap(true).css_classes(["dim-label", "caption"]).build();
+    let text = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(2).valign(gtk::Align::Center).build();
+    text.append(&title);
+    text.append(&detail);
+    hero.append(&icon);
+    hero.append(&text);
+    let card = hero.clone();
+    let sync = move |control: bool, view: bool| {
+        let (class, icon_name, heading, description) = match (control, view) {
+            (true, true) => ("view", "view-reveal-symbolic", tr("Claude can see through the camera"), tr("Pictures are sent to Anthropic when Claude asks for them")),
+            (true, false) => ("control", "object-select-symbolic", tr("Claude can control the camera"), tr("But cannot see the picture")),
+            _ => ("", "view-conceal-symbolic", tr("Claude has no access"), tr("Turn on a switch below to give access")),
+        };
+        let classes = ["status-hero", class];
+        card.set_css_classes(&classes[..if class.is_empty() { 1 } else { 2 }]);
+        icon.set_icon_name(Some(icon_name));
+        title.set_label(heading);
+        detail.set_label(description);
+    };
+    (hero, sync)
+}
+
 impl App {
     fn claude_check(&self, needs_view: bool, moves_camera: bool) -> Result<(), String> {
         let config = self.config.borrow();
@@ -624,6 +652,12 @@ impl App {
             .icon_name("user-available-symbolic")
             .build();
 
+        let hero_group = adw::PreferencesGroup::new();
+        let (hero, sync_hero) = access_hero();
+        sync_hero(self.config.borrow().claude_control, self.config.borrow().claude_camera_view);
+        hero_group.add(&hero);
+        page.add(&hero_group);
+
         let access = adw::PreferencesGroup::builder()
             .title(tr("Claude Integration (MCP)"))
             .description(tr("Lets Claude, in Claude Code or Claude Desktop, read and change the camera settings, move the gimbal and manage positions and profiles for you. Everything is off until you turn it on here, and you can turn it off at any time."))
@@ -685,17 +719,22 @@ impl App {
 
         let weak = Rc::downgrade(self);
         let view_row = view.clone();
+        let sync_control = sync_hero.clone();
         control.connect_active_notify(move |row| {
             let Some(app) = weak.upgrade() else { return };
             app.config.borrow_mut().claude_control = row.is_active();
             app.config.borrow().save();
             view_row.set_sensitive(row.is_active());
+            let config = app.config.borrow();
+            sync_control(config.claude_control, config.claude_camera_view);
         });
         let weak = Rc::downgrade(self);
         view.connect_active_notify(move |row| {
             let Some(app) = weak.upgrade() else { return };
             app.config.borrow_mut().claude_camera_view = row.is_active();
             app.config.borrow().save();
+            let config = app.config.borrow();
+            sync_hero(config.claude_control, config.claude_camera_view);
         });
         let copy_to = |dialog: &adw::PreferencesDialog, text: String| {
             dialog.clipboard().set_text(&text);

@@ -13,7 +13,8 @@ of its own.
 
 * **Native GTK 4 / libadwaita interface** that fits into GNOME, follows the light/dark theme and also
   runs on KDE Plasma.
-* **Live preview** in 720p, 1080p or 4K, with photos saved to `~/Pictures/Link Studio`.
+* **Live preview** in 720p, 1080p or 4K, with rule-of-thirds lines, fullscreen and photos saved to
+  `~/Pictures/Link Studio`.
 * **Gimbal control**: pan, tilt and zoom with buttons or the keyboard, saved positions, centering and a
   privacy mode that points the camera down.
 * **AI tracking** with framing (head, upper body, full body), plus an overview of the camera's hand
@@ -182,6 +183,8 @@ again at any time:
   camera.
 * **Allow Claude to see through the camera** – a separate permission for pictures.
 
+A status card at the top of that page always shows what Claude has access to right now.
+
 ### Privacy
 
 * Pictures Claude takes are sent to Anthropic to be analyzed, the same as an image you paste into a chat.
@@ -231,11 +234,12 @@ Tools: `get_status`, `take_snapshot`, `set_image_settings`, `reset_image_setting
 | Ctrl + arrow keys | Move the camera |
 | Ctrl + plus / minus | Zoom in / out |
 | Ctrl + Home | Center the camera |
-| Ctrl + 1–9 | Go to a saved position |
+| Ctrl + 1–9 | Go to a saved position (right-click a position to replace or delete it) |
 | Ctrl + T | AI tracking on/off |
 | Ctrl + P | Preview on/off |
 | Ctrl + S | Take a photo |
 | F9 | Show/hide the settings |
+| F11 / Esc | Fullscreen preview on / off |
 | Ctrl + , | Preferences |
 | Ctrl + Q | Quit |
 

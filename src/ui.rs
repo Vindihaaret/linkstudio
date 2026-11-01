@@ -47,21 +47,66 @@ const FRAMINGS: [(u8, &str); 3] = [(1, n_("Head")), (2, n_("Upper body")), (3, n
 const PREVIEW_HEIGHTS: [(u32, &str); 3] = [(720, "720p"), (1080, "1080p"), (2160, n_("4K (2160p)"))];
 
 const CSS: &str = r#"
-.preview-video { background-color: black; border-radius: 12px; }
-.preview-status { background-color: alpha(currentColor, 0.05); border-radius: 12px; }
-.badge {
+.preview-video { background-color: black; border-radius: 16px; }
+.preview-status { background-color: alpha(currentColor, 0.05); border-radius: 16px; }
+.preview-stack { border-radius: 16px; box-shadow: 0 8px 24px alpha(black, 0.22); }
+.chip {
   border-radius: 999px;
-  padding: 4px 12px;
+  padding: 3px 10px;
   font-weight: 700;
-  font-size: 0.85em;
+  font-size: 12px;
   color: white;
-  background-color: alpha(@accent_bg_color, 0.92);
+  background-color: alpha(black, 0.6);
 }
-.badge.virtual { background-color: alpha(@success_bg_color, 0.92); }
-.badge.claude { background-color: #d97757; }
-.badge.privacy { background-color: alpha(@warning_bg_color, 0.95); color: @warning_fg_color; }
-.ptz-pad button { min-width: 46px; min-height: 46px; }
+.chip-dot { min-width: 7px; min-height: 7px; border-radius: 999px; background-color: #8ff0a4; }
+.chip-dot.accent { background-color: #62a0ea; }
+.chip-dot.warning { background-color: #f8e45c; }
+.chip-dot.claude { background-color: #d97757; }
+.stream-info { font-weight: 400; font-feature-settings: "tnum"; }
+.preview-tools { padding: 4px; border-radius: 999px; background-color: alpha(black, 0.66); }
+.preview-tools button { color: white; min-width: 36px; min-height: 36px; padding: 0; }
+.preview-tools separator { margin: 8px 4px; background-color: alpha(white, 0.22); }
+.ptz-pad {
+  padding: 2px;
+  border-radius: 999px;
+  background-color: alpha(currentColor, 0.05);
+  box-shadow: inset 0 0 0 1px alpha(currentColor, 0.1);
+}
+.ptz-pad button { min-width: 46px; min-height: 46px; padding: 0; }
+.ptz-pad .ptz-home { background-color: alpha(currentColor, 0.1); }
+.big-number { font-size: 30px; font-weight: 700; letter-spacing: -0.5px; font-feature-settings: "tnum"; }
 .control-card { padding: 14px 18px; }
+.position-tile { padding: 6px; border-radius: 12px; font-weight: 400; background-color: alpha(currentColor, 0.05); }
+.position-tile:hover { background-color: alpha(currentColor, 0.1); }
+.position-map {
+  border-radius: 9px;
+  background-color: alpha(currentColor, 0.05);
+  box-shadow: inset 0 0 0 1px alpha(currentColor, 0.1);
+}
+.position-marker { border-radius: 3px; background-color: @accent_bg_color; }
+.status-hero {
+  padding: 13px 16px;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px alpha(currentColor, 0.08);
+  background-image: linear-gradient(110deg, alpha(@warning_color, 0.17), alpha(currentColor, 0.04));
+}
+.status-hero.control { background-image: linear-gradient(110deg, alpha(@success_color, 0.17), alpha(currentColor, 0.04)); }
+.status-hero.view { background-image: linear-gradient(110deg, alpha(#d97757, 0.24), alpha(currentColor, 0.04)); }
+.status-hero-icon { min-width: 36px; min-height: 36px; border-radius: 999px; background-color: alpha(currentColor, 0.1); }
+
+/* The main window: layered cards. Dialogs stay outside and keep the plain look. */
+.link-main headerbar { background: none; box-shadow: none; }
+.link-main .control-card, .link-main list.boxed-list {
+  background-color: alpha(white, 0.065);
+  border-radius: 16px;
+  box-shadow: inset 0 1px alpha(white, 0.09), inset 0 0 0 1px alpha(white, 0.07), 0 6px 20px alpha(black, 0.16);
+}
+.link-main.link-light .control-card, .link-main.link-light list.boxed-list {
+  background-color: alpha(white, 0.8);
+  box-shadow: inset 0 0 0 1px alpha(black, 0.06), 0 6px 18px alpha(black, 0.07);
+}
+.link-main list.boxed-list > row:first-child { border-top-left-radius: 16px; border-top-right-radius: 16px; }
+.link-main list.boxed-list > row:last-child { border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
 "#;
 
 pub fn load_css() {
@@ -148,6 +193,7 @@ pub struct Carry {
 
 struct Section {
     title: &'static str,
+    icon: &'static str,
     description: Option<&'static str>,
     ids: &'static [u32],
 }
@@ -155,11 +201,13 @@ struct Section {
 const IMAGE_SECTIONS: &[Section] = &[
     Section {
         title: n_("Image"),
+        icon: "display-brightness-symbolic",
         description: None,
         ids: &[cid::BRIGHTNESS, cid::CONTRAST, cid::SATURATION, cid::HUE, cid::SHARPNESS, cid::GAMMA],
     },
     Section {
         title: n_("Exposure"),
+        icon: "weather-clear-symbolic",
         description: None,
         ids: &[
             cid::EXPOSURE_AUTO,
@@ -171,12 +219,14 @@ const IMAGE_SECTIONS: &[Section] = &[
     },
     Section {
         title: n_("White balance"),
+        icon: "color-select-symbolic",
         description: None,
         ids: &[cid::AUTO_WHITE_BALANCE, cid::WHITE_BALANCE_TEMPERATURE],
     },
-    Section { title: n_("Focus"), description: None, ids: &[cid::FOCUS_AUTO, cid::FOCUS_ABSOLUTE] },
+    Section { title: n_("Focus"), icon: "find-location-symbolic", description: None, ids: &[cid::FOCUS_AUTO, cid::FOCUS_ABSOLUTE] },
     Section {
         title: n_("Flicker"),
+        icon: "emblem-system-symbolic",
         description: Some(n_("Use 50 Hz in Europe and most of the world, 60 Hz in North America.")),
         ids: &[cid::POWER_LINE_FREQUENCY],
     },
@@ -252,7 +302,7 @@ fn pan_tilt_label(pan: i32, tilt: i32) -> String {
 }
 
 fn position_summary(p: &Position) -> String {
-    trf("Pan {}° · Tilt {}° · Zoom {}×", &[&degrees(p.pan), &degrees(p.tilt), &zoom_factor(p.zoom)])
+    format!("{}° · {}° · {}×", degrees(p.pan), degrees(p.tilt), zoom_factor(p.zoom))
 }
 
 /// The value "reset" puts a control back to. Automatic modes are turned on
@@ -347,8 +397,16 @@ pub struct App {
     picture: gtk::Picture,
     mirror_button: gtk::ToggleButton,
     snapshot_button: gtk::Button,
-    tracking_badge: gtk::Label,
-    privacy_badge: gtk::Label,
+    tracking_badge: gtk::Box,
+    tracking_badge_label: gtk::Label,
+    privacy_badge: gtk::Box,
+    stream_info: gtk::Label,
+    grid_button: gtk::ToggleButton,
+    thirds: gtk::DrawingArea,
+    fullscreen_button: gtk::Button,
+    bottom: gtk::Box,
+    content: adw::ToolbarView,
+    camera_page: gtk::Box,
     pad: gtk::Grid,
     pad_buttons: [gtk::Button; 5],
     zoom: gtk::Scale,
@@ -356,11 +414,12 @@ pub struct App {
     zoom_in: gtk::Button,
     position_label: gtk::Label,
     privacy: gtk::ToggleButton,
-    positions_list: gtk::ListBox,
+    positions_list: gtk::FlowBox,
+    positions_empty: gtk::Label,
     save_position: gtk::Button,
     mirror: Arc<AtomicBool>,
     show_preview: Arc<AtomicBool>,
-    virtual_badge: gtk::Label,
+    virtual_badge: gtk::Box,
 
     camera: RefCell<Option<Rc<Camera>>>,
     /// Whether the running stream also feeds the virtual camera.
@@ -377,7 +436,7 @@ pub struct App {
     snapshot_request: Arc<AtomicBool>,
     /// The running stream was started only to take a picture for Claude.
     claude_stream: Cell<bool>,
-    claude_badge: gtk::Label,
+    claude_badge: gtk::Box,
     claude_badge_timeout: RefCell<Option<glib::SourceId>>,
     /// Claude actions waiting for the camera to wake up.
     claude_after_wake: RefCell<Vec<claude::WakeAction>>,
@@ -412,6 +471,72 @@ pub struct App {
     /// Tracking was on when the camera was disconnected; turn it back on when
     /// it comes back.
     reconnect_tracking: Cell<bool>,
+    /// Height of the running stream and frames shown since the last tick, for
+    /// the label on the preview.
+    stream_height: Cell<u32>,
+    frames_shown: Cell<u32>,
+    /// Whether the settings sidebar was open before going fullscreen.
+    sidebar_before_fullscreen: Cell<bool>,
+}
+
+/// A small status label for the preview, with a colored dot.
+fn status_chip(text: &str, dot: &str) -> (gtk::Box, gtk::Label) {
+    let chip = gtk::Box::builder().spacing(6).visible(false).css_classes(["chip"]).build();
+    chip.append(&gtk::Box::builder().valign(gtk::Align::Center).css_classes(["chip-dot", dot]).build());
+    let label = gtk::Label::new(Some(text));
+    chip.append(&label);
+    (chip, label)
+}
+
+/// A settings group whose title has an icon. Libadwaita has no such title, so
+/// the header suffix takes its place.
+fn icon_group(title: &str, icon: &str, description: Option<&str>) -> adw::PreferencesGroup {
+    let header = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(4).hexpand(true).build();
+    let line = gtk::Box::builder().spacing(8).build();
+    line.append(&gtk::Image::builder().icon_name(icon).css_classes(["dim-label"]).build());
+    line.append(&gtk::Label::builder().label(title).xalign(0.0).css_classes(["heading"]).build());
+    header.append(&line);
+    if let Some(description) = description {
+        // A wrapping label asks for the width of its whole text otherwise.
+        header.append(&gtk::Label::builder().label(description).wrap(true).max_width_chars(1).hexpand(true).xalign(0.0).css_classes(["dim-label"]).build());
+    }
+    let group = adw::PreferencesGroup::new();
+    group.set_header_suffix(Some(&header));
+    // The empty title beside it would otherwise keep half the width.
+    if let Some(title) = header.prev_sibling() {
+        title.set_visible(false);
+    }
+    group
+}
+
+/// The reset button only shows when the value differs from the default.
+fn show_reset_when_changed(scale: &gtk::Scale, reset: &gtk::Button, default: f64) {
+    let sync = {
+        let reset = reset.clone();
+        move |scale: &gtk::Scale| {
+            let changed = (scale.value() - default).abs() > 0.05;
+            reset.set_opacity(if changed { 1.0 } else { 0.0 });
+            reset.set_sensitive(changed);
+        }
+    };
+    sync(scale);
+    scale.connect_value_changed(sync);
+}
+
+/// Rule-of-thirds lines over the 16:9 picture, inside any black bars.
+fn draw_thirds(_: &gtk::DrawingArea, cr: &gtk::cairo::Context, width: i32, height: i32) {
+    let (area_w, area_h) = (width as f64, height as f64);
+    let (w, h) = if area_w / area_h > 16.0 / 9.0 { (area_h * 16.0 / 9.0, area_h) } else { (area_w, area_w * 9.0 / 16.0) };
+    let (x, y) = ((area_w - w) / 2.0, (area_h - h) / 2.0);
+    cr.set_source_rgba(1.0, 1.0, 1.0, 0.45);
+    cr.set_line_width(1.0);
+    for part in [1.0, 2.0] {
+        cr.move_to(x + w * part / 3.0, y);
+        cr.line_to(x + w * part / 3.0, y + h);
+        cr.move_to(x, y + h * part / 3.0);
+        cr.line_to(x + w, y + h * part / 3.0);
+    }
+    let _ = cr.stroke();
 }
 
 fn icon_button(icon: &str, tooltip: &str) -> gtk::Button {
@@ -482,53 +607,65 @@ impl App {
             .margin_top(12)
             .margin_start(12)
             .build();
-        let tracking_badge = gtk::Label::builder()
-            .label(tr("AI tracking"))
-            .visible(false)
-            .css_classes(["badge"])
-            .build();
-        let privacy_badge = gtk::Label::builder()
-            .label(tr("Privacy"))
-            .visible(false)
-            .css_classes(["badge", "privacy"])
-            .build();
-        let virtual_badge = gtk::Label::builder()
-            .label(tr("Virtual camera"))
-            .visible(false)
-            .css_classes(["badge", "virtual"])
-            .build();
-        let claude_badge = gtk::Label::builder()
-            .label(tr("Claude is looking"))
-            .visible(false)
-            .css_classes(["badge", "claude"])
-            .build();
+        let (tracking_badge, tracking_badge_label) = status_chip(tr("AI tracking"), "accent");
+        let (privacy_badge, _) = status_chip(tr("Privacy"), "warning");
+        let (virtual_badge, _) = status_chip(tr("Virtual camera"), "live");
+        let (claude_badge, _) = status_chip(tr("Claude is looking"), "claude");
         badges.append(&claude_badge);
         badges.append(&virtual_badge);
         badges.append(&tracking_badge);
         badges.append(&privacy_badge);
         overlay.add_overlay(&badges);
 
-        let osd = gtk::Box::builder()
-            .spacing(6)
+        let stream_info = gtk::Label::builder()
             .halign(gtk::Align::End)
+            .valign(gtk::Align::Start)
+            .margin_top(12)
+            .margin_end(12)
+            .visible(false)
+            .css_classes(["chip", "stream-info"])
+            .build();
+        overlay.add_overlay(&stream_info);
+
+        let thirds = gtk::DrawingArea::builder().can_target(false).visible(config.preview_grid).build();
+        thirds.set_draw_func(draw_thirds);
+        overlay.add_overlay(&thirds);
+
+        let tools = gtk::Box::builder()
+            .spacing(2)
+            .halign(gtk::Align::Center)
             .valign(gtk::Align::End)
             .margin_bottom(12)
-            .margin_end(12)
+            .css_classes(["preview-tools"])
+            .build();
+        let grid_button = gtk::ToggleButton::builder()
+            .icon_name("view-grid-symbolic")
+            .tooltip_text(tr("Rule-of-thirds lines (only in the preview)"))
+            .css_classes(["flat", "circular"])
+            .active(config.preview_grid)
             .build();
         let mirror_button = gtk::ToggleButton::builder()
             .icon_name("object-flip-horizontal-symbolic")
             .tooltip_text(tr("Mirror the preview (does not affect other programs)"))
-            .css_classes(["osd", "circular"])
+            .css_classes(["flat", "circular"])
             .active(config.preview_mirror)
             .build();
         let snapshot_button = gtk::Button::builder()
             .icon_name("camera-photo-symbolic")
             .tooltip_text(tr("Take photo (Ctrl+S)"))
-            .css_classes(["osd", "circular"])
+            .css_classes(["flat", "circular"])
             .build();
-        osd.append(&mirror_button);
-        osd.append(&snapshot_button);
-        overlay.add_overlay(&osd);
+        let fullscreen_button = gtk::Button::builder()
+            .icon_name("view-fullscreen-symbolic")
+            .tooltip_text(tr("Fullscreen (F11)"))
+            .css_classes(["flat", "circular"])
+            .build();
+        tools.append(&grid_button);
+        tools.append(&mirror_button);
+        tools.append(&gtk::Separator::new(gtk::Orientation::Vertical));
+        tools.append(&snapshot_button);
+        tools.append(&fullscreen_button);
+        overlay.add_overlay(&tools);
 
         let preview_status_button = gtk::Button::builder()
             .label(tr("Start Preview"))
@@ -548,6 +685,7 @@ impl App {
             .transition_type(gtk::StackTransitionType::Crossfade)
             .vexpand(true)
             .height_request(220)
+            .css_classes(["preview-stack"])
             .build();
         preview_stack.add_named(&overlay, Some("video"));
         preview_stack.add_named(&preview_status, Some("status"));
@@ -559,12 +697,16 @@ impl App {
         let left = icon_button("go-previous-symbolic", tr("Pan left (Ctrl+←)"));
         let right = icon_button("go-next-symbolic", tr("Pan right (Ctrl+→)"));
         let home = icon_button("go-home-symbolic", tr("Center the camera (Ctrl+Home)"));
+        for b in [&up, &down, &left, &right] {
+            b.add_css_class("flat");
+        }
         for b in [&up, &down, &left, &right, &home] {
             b.add_css_class("circular");
         }
+        home.add_css_class("ptz-home");
         let pad = gtk::Grid::builder()
-            .row_spacing(6)
-            .column_spacing(6)
+            .row_spacing(4)
+            .column_spacing(4)
             .halign(gtk::Align::Center)
             .valign(gtk::Align::Center)
             .css_classes(["ptz-pad"])
@@ -577,10 +719,8 @@ impl App {
 
         let zoom = gtk::Scale::with_range(gtk::Orientation::Horizontal, ZOOM_MIN, ZOOM_MAX, 1.0);
         zoom.set_hexpand(true);
-        zoom.set_width_request(180);
-        zoom.set_draw_value(true);
-        zoom.set_value_pos(gtk::PositionType::Right);
-        zoom.set_format_value_func(|_, v| format!("{:.1}×", v / 100.0));
+        zoom.set_width_request(120);
+        zoom.set_draw_value(false);
         for z in [100.0, 200.0, 300.0, 400.0] {
             zoom.add_mark(z, gtk::PositionType::Bottom, Some(&format!("{}×", z / 100.0)));
         }
@@ -593,6 +733,14 @@ impl App {
         zoom_row.append(&zoom);
         zoom_row.append(&zoom_in);
 
+        let zoom_value = gtk::Label::builder()
+            .label("1.0×")
+            .halign(gtk::Align::Start)
+            .css_classes(["big-number"])
+            .build();
+        let shown = zoom_value.clone();
+        zoom.connect_value_changed(move |scale| shown.set_label(&format!("{:.1}×", scale.value() / 100.0)));
+
         let position_label = gtk::Label::builder()
             .label(pan_tilt_label(0, 0))
             .halign(gtk::Align::Start)
@@ -601,7 +749,7 @@ impl App {
         let privacy = gtk::ToggleButton::builder()
             .child(&adw::ButtonContent::builder().icon_name("view-conceal-symbolic").label(tr("Privacy")).build())
             .tooltip_text(tr("Point the camera down. Turn off to return to the previous position."))
-            .halign(gtk::Align::Start)
+            .valign(gtk::Align::Center)
             .build();
 
         let gimbal_side = gtk::Box::builder()
@@ -610,55 +758,68 @@ impl App {
             .valign(gtk::Align::Center)
             .hexpand(true)
             .build();
-        gimbal_side.append(&gtk::Label::builder().label(tr("Zoom")).halign(gtk::Align::Start).css_classes(["heading"]).build());
+        let zoom_heading = gtk::Box::builder().orientation(gtk::Orientation::Vertical).hexpand(true).build();
+        zoom_heading.append(&gtk::Label::builder().label(tr("Zoom")).halign(gtk::Align::Start).css_classes(["caption-heading", "dim-label"]).build());
+        zoom_heading.append(&zoom_value);
+        let gimbal_header = gtk::Box::builder().spacing(12).build();
+        gimbal_header.append(&zoom_heading);
+        gimbal_header.append(&privacy);
+        gimbal_side.append(&gimbal_header);
         gimbal_side.append(&zoom_row);
         gimbal_side.append(&position_label);
-        gimbal_side.append(&privacy);
 
-        let gimbal_inner = gtk::Box::builder().spacing(24).build();
-        gimbal_inner.append(&pad);
-        gimbal_inner.append(&gimbal_side);
-        let gimbal_card = gtk::Box::builder()
-            .orientation(gtk::Orientation::Vertical)
-            .spacing(10)
-            .css_classes(["card", "control-card"])
-            .width_request(440)
-            .build();
-        gimbal_card.append(
-            &gtk::Label::builder()
-                .label(tr("Camera Control"))
-                .halign(gtk::Align::Start)
-                .css_classes(["title-4"])
-                .build(),
-        );
-        gimbal_card.append(&gimbal_inner);
+        let gimbal_card = gtk::Box::builder().spacing(16).css_classes(["card", "control-card"]).build();
+        gimbal_card.append(&pad);
+        gimbal_card.append(&gimbal_side);
 
         // Saved positions.
-        let positions_list = gtk::ListBox::builder()
+        let positions_list = gtk::FlowBox::builder()
             .selection_mode(gtk::SelectionMode::None)
-            .css_classes(["boxed-list"])
+            .homogeneous(true)
+            .min_children_per_line(2)
+            .max_children_per_line(3)
+            .column_spacing(8)
+            .row_spacing(8)
+            .valign(gtk::Align::Start)
+            .build();
+        let positions_empty = gtk::Label::builder()
+            .label(tr("No saved positions yet"))
+            .css_classes(["dim-label"])
+            .margin_top(18)
+            .margin_bottom(18)
             .build();
         let save_position = gtk::Button::builder()
             .child(&adw::ButtonContent::builder().icon_name("list-add-symbolic").label(tr("Save Position")).build())
-            .css_classes(["flat"])
             .build();
-        let positions_group = adw::PreferencesGroup::builder()
-            .title(tr("Saved Positions"))
-            .description(tr("Click to move the camera there"))
-            .header_suffix(&save_position)
-            .hexpand(true)
-            .build();
+        let positions_header = gtk::Box::builder().spacing(12).build();
+        positions_header.append(
+            &gtk::Label::builder()
+                .label(tr("Saved Positions"))
+                .hexpand(true)
+                .xalign(0.0)
+                .css_classes(["caption-heading", "dim-label"])
+                .build(),
+        );
+        positions_header.append(&save_position);
         let positions_scroll = gtk::ScrolledWindow::builder()
             .hscrollbar_policy(gtk::PolicyType::Never)
             .propagate_natural_height(true)
-            .max_content_height(260)
+            .max_content_height(170)
             .child(&positions_list)
             .build();
-        positions_group.add(&positions_scroll);
+        let positions_card = gtk::Box::builder()
+            .orientation(gtk::Orientation::Vertical)
+            .spacing(10)
+            .hexpand(true)
+            .css_classes(["card", "control-card"])
+            .build();
+        positions_card.append(&positions_header);
+        positions_card.append(&positions_empty);
+        positions_card.append(&positions_scroll);
 
         let bottom = gtk::Box::builder().spacing(18).build();
         bottom.append(&gimbal_card);
-        bottom.append(&positions_group);
+        bottom.append(&positions_card);
 
         let camera_page = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)
@@ -694,6 +855,7 @@ impl App {
         sidebar.add_top_bar(&sidebar_header);
 
         let split = adw::OverlaySplitView::builder()
+            .css_classes(["link-main"])
             .sidebar_position(gtk::PackType::End)
             .min_sidebar_width(450.0)
             .max_sidebar_width(500.0)
@@ -738,7 +900,15 @@ impl App {
             mirror_button,
             snapshot_button,
             tracking_badge,
+            tracking_badge_label,
             privacy_badge,
+            stream_info,
+            grid_button,
+            thirds,
+            fullscreen_button,
+            bottom,
+            content,
+            camera_page,
             pad,
             pad_buttons: [up, down, left, right, home],
             zoom,
@@ -747,6 +917,7 @@ impl App {
             position_label,
             privacy,
             positions_list,
+            positions_empty,
             save_position,
             mirror: Arc::new(AtomicBool::new(config.preview_mirror)),
             show_preview: Arc::new(AtomicBool::new(false)),
@@ -786,9 +957,13 @@ impl App {
             stream_retry: RefCell::new(None),
             stream_waiting: RefCell::new(None),
             reconnect_tracking: Cell::new(false),
+            stream_height: Cell::new(0),
+            frames_shown: Cell::new(0),
+            sidebar_before_fullscreen: Cell::new(false),
         });
         CURRENT.with(|current| *current.borrow_mut() = Rc::downgrade(&app));
         app.connect_signals();
+        app.follow_style();
         app.rebuild_positions();
         app.set_connected_ui(false);
         // Restarting the preview resumes tracking that was on in the old window.
@@ -813,6 +988,23 @@ impl App {
             app.schedule_screenshot(path, std::env::var("LINKSTUDIO_PAGE").ok());
         }
         app
+    }
+
+    /// The layered cards need other colors on the light background.
+    fn follow_style(&self) {
+        let sync = {
+            let split = self.split.clone();
+            move |style: &adw::StyleManager| {
+                if style.is_dark() {
+                    split.remove_css_class("link-light");
+                } else {
+                    split.add_css_class("link-light");
+                }
+            }
+        };
+        let style = adw::StyleManager::default();
+        sync(&style);
+        style.connect_dark_notify(sync);
     }
 
     /// Development aid: render the window to a PNG and quit, since GNOME on
@@ -928,6 +1120,25 @@ impl App {
             toggle.set_active(true);
         });
 
+        let weak = Rc::downgrade(self);
+        self.grid_button.connect_toggled(move |button| {
+            let Some(app) = weak.upgrade() else { return };
+            app.thirds.set_visible(button.is_active());
+            app.config.borrow_mut().preview_grid = button.is_active();
+            app.config.borrow().save();
+        });
+        let weak = Rc::downgrade(self);
+        self.fullscreen_button.connect_clicked(move |_| {
+            if let Some(app) = weak.upgrade() {
+                app.toggle_fullscreen();
+            }
+        });
+        let weak = Rc::downgrade(self);
+        self.window.connect_fullscreened_notify(move |window| {
+            if let Some(app) = weak.upgrade() {
+                app.fullscreen_changed(window.is_fullscreen());
+            }
+        });
         let weak = Rc::downgrade(self);
         self.mirror_button.connect_toggled(move |button| {
             let Some(app) = weak.upgrade() else { return };
@@ -1081,6 +1292,12 @@ impl App {
             app.set_tracking(on);
         });
         self.add_shortcut(&controller, "F9", |app| app.split.set_show_sidebar(!app.split.shows_sidebar()));
+        self.add_shortcut(&controller, "F11", |app| app.toggle_fullscreen());
+        self.add_shortcut(&controller, "Escape", |app| {
+            if app.window.is_fullscreen() {
+                app.window.unfullscreen();
+            }
+        });
         for n in 1..=9usize {
             self.add_shortcut(&controller, &format!("<Control>{n}"), move |app| app.goto_position(n - 1));
         }
@@ -1133,8 +1350,48 @@ impl App {
         match self.cam() {
             None => self.try_connect(),
             Some(cam) if cam.is_gone() => self.disconnect(),
-            Some(cam) => self.refresh(&cam),
+            Some(cam) => {
+                self.refresh(&cam);
+                self.update_stream_info();
+            }
         }
+    }
+
+    fn update_stream_info(&self) {
+        let frames = self.frames_shown.replace(0);
+        self.stream_info.set_visible(frames > 0);
+        if frames > 0 {
+            let height = self.stream_height.get();
+            let size = if height == 2160 { "4K".to_owned() } else { format!("{height}p") };
+            self.stream_info.set_label(&format!("{size} · {frames} fps"));
+        }
+    }
+
+    fn toggle_fullscreen(&self) {
+        if self.window.is_fullscreen() {
+            self.window.unfullscreen();
+        } else {
+            self.window.fullscreen();
+        }
+    }
+
+    /// Fullscreen shows only the preview.
+    fn fullscreen_changed(&self, fullscreen: bool) {
+        if fullscreen {
+            self.sidebar_before_fullscreen.set(self.split.shows_sidebar());
+            self.split.set_show_sidebar(false);
+        } else {
+            self.split.set_show_sidebar(self.sidebar_before_fullscreen.get());
+        }
+        self.content.set_reveal_top_bars(!fullscreen);
+        self.bottom.set_visible(!fullscreen);
+        let margin = if fullscreen { 0 } else { 18 };
+        self.camera_page.set_margin_start(margin);
+        self.camera_page.set_margin_end(margin);
+        self.camera_page.set_margin_bottom(margin);
+        self.camera_page.set_margin_top(if fullscreen { 0 } else { 6 });
+        self.fullscreen_button.set_icon_name(if fullscreen { "view-restore-symbolic" } else { "view-fullscreen-symbolic" });
+        self.fullscreen_button.set_tooltip_text(Some(if fullscreen { tr("Leave fullscreen (Esc)") } else { tr("Fullscreen (F11)") }));
     }
 
     fn try_connect(self: &Rc<Self>) {
@@ -1157,6 +1414,7 @@ impl App {
         if let Ok(zoom) = cam.query(cid::ZOOM_ABSOLUTE) {
             self.zoom.set_range(zoom.min as f64, zoom.max as f64);
         }
+        self.rebuild_positions();
         self.title.set_subtitle(&trf("{} · connected", &[&cam.info.name]));
         *self.camera.borrow_mut() = Some(cam.clone());
         self.build_sidebar(&cam);
@@ -1217,6 +1475,7 @@ impl App {
             self.split.set_show_sidebar(false);
             self.tracking_badge.set_visible(false);
             self.privacy_badge.set_visible(false);
+            self.stream_info.set_visible(false);
         } else if !self.split.is_collapsed() {
             self.split.set_show_sidebar(true);
         }
@@ -1262,6 +1521,7 @@ impl App {
             if let Ok(framing) = cam.framing() {
                 if let Some(pos) = FRAMINGS.iter().position(|(v, _)| *v == framing) {
                     rows.framing.set_selected(pos as u32);
+                    self.tracking_badge_label.set_label(&format!("{} · {}", tr("AI tracking"), tr(FRAMINGS[pos].1)));
                 }
             }
             if rows.group.is_visible() {
@@ -1330,10 +1590,7 @@ impl App {
             if infos.is_empty() && exposure_row.is_none() {
                 continue;
             }
-            let group = adw::PreferencesGroup::builder().title(tr(section.title)).build();
-            if let Some(description) = section.description {
-                group.set_description(Some(tr(description)));
-            }
+            let group = icon_group(tr(section.title), section.icon, section.description.map(tr));
             if let Some(row) = exposure_row {
                 group.add(&row);
             }
@@ -1346,7 +1603,7 @@ impl App {
         let known: Vec<u32> = IMAGE_SECTIONS.iter().flat_map(|s| s.ids.iter().copied()).collect();
         let others: Vec<&CtrlInfo> = controls.iter().filter(|c| !known.contains(&c.id)).collect();
         if !others.is_empty() {
-            let group = adw::PreferencesGroup::builder().title(tr("Other Settings")).build();
+            let group = icon_group(tr("Other Settings"), "emblem-system-symbolic", None);
             for info in others {
                 group.add(&self.control_row(info));
             }
@@ -1414,6 +1671,7 @@ impl App {
                     }
                 });
                 let default = info.default as f64;
+                show_reset_when_changed(&scale, &reset, default);
                 let target = scale.clone();
                 reset.connect_clicked(move |_| target.set_value(default));
                 Bound::Scale { info: info.clone(), row, scale }
@@ -1492,6 +1750,7 @@ impl App {
                 app.report(n_("Could not change the setting: {}"), cam.set_exposure_compensation(value));
             }
         });
+        show_reset_when_changed(&scale, &reset, 0.0);
         let target = scale.clone();
         reset.connect_clicked(move |_| target.set_value(0.0));
         *self.exposure.borrow_mut() = Some(scale);
@@ -1537,10 +1796,11 @@ impl App {
     fn build_tracking_page(self: &Rc<Self>, cam: &Camera) -> adw::PreferencesPage {
         let page = adw::PreferencesPage::new();
 
-        let group = adw::PreferencesGroup::builder()
-            .title(tr("AI Tracking"))
-            .description(tr("The camera uses its gimbal to keep you in the picture automatically. It turns tracking off by itself after 60 seconds with no one in the picture."))
-            .build();
+        let group = icon_group(
+            tr("AI Tracking"),
+            "emoji-people-symbolic",
+            Some(tr("The camera uses its gimbal to keep you in the picture automatically. It turns tracking off by itself after 60 seconds with no one in the picture.")),
+        );
         let follow = adw::SwitchRow::builder()
             .title(tr("Follow Me"))
             .subtitle(tr("Ctrl+T turns tracking on and off"))
@@ -1574,10 +1834,11 @@ impl App {
         group.add(&other_mode);
         page.add(&group);
 
-        let gestures = adw::PreferencesGroup::builder()
-            .title(tr("Hand Gestures"))
-            .description(tr("The camera recognizes these gestures by itself. They are always on and cannot be turned off from Linux. Keep your face in the picture and do not cover it with your hand."))
-            .build();
+        let gestures = icon_group(
+            tr("Hand Gestures"),
+            "input-touchpad-symbolic",
+            Some(tr("The camera recognizes these gestures by itself. They are always on and cannot be turned off from Linux. Keep your face in the picture and do not cover it with your hand.")),
+        );
         // From the Insta360 Link manual (onlinemanual.insta360.com/link).
         let gesture_rows = [
             ("✋", tr("Open palm"), tr("Turns AI tracking on or off. Hold your palm toward the camera next to your face until the light flashes green.")),
@@ -1643,10 +1904,11 @@ impl App {
 
     fn build_effects_page(self: &Rc<Self>) -> adw::PreferencesPage {
         let page = adw::PreferencesPage::new();
-        let group = adw::PreferencesGroup::builder()
-            .title(tr("Virtual Camera"))
-            .description(tr("Sends the picture from Link Studio to other programs, such as Teams, Zoom or the browser, as “Link Studio Camera”. The preview and the meeting can then run at the same time."))
-            .build();
+        let group = icon_group(
+            tr("Virtual Camera"),
+            "camera-video-symbolic",
+            Some(tr("Sends the picture from Link Studio to other programs, such as Teams, Zoom or the browser, as “Link Studio Camera”. The preview and the meeting can then run at the same time.")),
+        );
 
         let setup = adw::ActionRow::builder().title(tr("Set up the virtual camera")).build();
         setup.add_prefix(&gtk::Image::from_icon_name("dialog-information-symbolic"));
@@ -1875,10 +2137,11 @@ impl App {
 
     fn build_profiles_page(self: &Rc<Self>) -> adw::PreferencesPage {
         let page = adw::PreferencesPage::new();
-        let group = adw::PreferencesGroup::builder()
-            .title(tr("Profiles"))
-            .description(tr("A profile stores the image and tracking settings. Star a profile to apply it automatically every time the camera is connected."))
-            .build();
+        let group = icon_group(
+            tr("Profiles"),
+            "user-bookmarks-symbolic",
+            Some(tr("A profile stores the image and tracking settings. Star a profile to apply it automatically every time the camera is connected.")),
+        );
         let entry = adw::EntryRow::builder()
             .title(tr("Save current settings as…"))
             .show_apply_button(true)
@@ -2037,7 +2300,7 @@ impl App {
         let page = adw::PreferencesPage::new();
         let identity = cam.identity();
 
-        let info = adw::PreferencesGroup::builder().title(tr("Camera")).build();
+        let info = icon_group(tr("Camera"), "camera-web-symbolic", None);
         let rows = [
             (tr("Model"), Some(cam.info.name.clone())),
             (tr("Serial number"), identity.serial),
@@ -2056,10 +2319,11 @@ impl App {
         }
         page.add(&info);
 
-        let preview = adw::PreferencesGroup::builder()
-            .title(tr("Preview"))
-            .description(tr("Only affects the preview and photos in Link Studio. Programs such as Teams or Zoom choose their own resolution."))
-            .build();
+        let preview = icon_group(
+            tr("Preview"),
+            "image-x-generic-symbolic",
+            Some(tr("Only affects the preview and photos in Link Studio. Programs such as Teams or Zoom choose their own resolution.")),
+        );
         let labels: Vec<&str> = PREVIEW_HEIGHTS.iter().map(|(_, l)| tr(l)).collect();
         let current = self.config.borrow().preview_height;
         let resolution = adw::ComboRow::builder()
@@ -2095,7 +2359,7 @@ impl App {
             app.config.borrow().save();
         });
 
-        let gimbal = adw::PreferencesGroup::builder().title(tr("Gimbal")).build();
+        let gimbal = icon_group(tr("Gimbal"), "find-location-symbolic", None);
         let center_row = adw::ActionRow::builder()
             .title(tr("Center the Camera"))
             .subtitle(tr("Moves the gimbal back to its middle position"))
@@ -2275,83 +2539,159 @@ impl App {
     // ----- Saved positions -----
 
     fn rebuild_positions(self: &Rc<Self>) {
-        // remove_all() drops the placeholder too, so it is set again each time.
         self.positions_list.remove_all();
-        self.positions_list.set_placeholder(Some(
-            &gtk::Label::builder()
-                .label(tr("No saved positions yet"))
-                .css_classes(["dim-label"])
-                .margin_top(18)
-                .margin_bottom(18)
-                .build(),
-        ));
         let positions = self.config.borrow().positions.clone();
+        self.positions_empty.set_visible(positions.is_empty());
         for (index, position) in positions.iter().enumerate() {
-            let row = adw::ActionRow::builder()
-                .title(position.name.as_str())
-                .subtitle(position_summary(position))
-                .activatable(true)
-                .build();
-            if index < 9 {
-                row.add_prefix(
-                    &gtk::Label::builder()
-                        .label(format!("{}", index + 1))
-                        .width_chars(2)
-                        .css_classes(["dim-label", "numeric"])
-                        .build(),
-                );
+            let tile = self.position_tile(index, position);
+            self.positions_list.append(&tile);
+            // The button in the tile takes the focus, not the box around it.
+            if let Some(child) = tile.parent() {
+                child.set_focusable(false);
             }
-            let update = gtk::Button::builder()
-                .icon_name("document-save-symbolic")
-                .tooltip_text(tr("Replace with the current position"))
-                .valign(gtk::Align::Center)
-                .css_classes(["flat", "circular"])
-                .build();
-            let delete = gtk::Button::builder()
-                .icon_name("edit-delete-symbolic")
-                .tooltip_text(tr("Delete position"))
-                .valign(gtk::Align::Center)
-                .css_classes(["flat", "circular"])
-                .build();
-            row.add_suffix(&update);
-            row.add_suffix(&delete);
-
-            let weak = Rc::downgrade(self);
-            row.connect_activated(move |_| {
-                if let Some(app) = weak.upgrade() {
-                    app.goto_position(index);
-                }
-            });
-            let weak = Rc::downgrade(self);
-            update.connect_clicked(move |_| {
-                let Some(app) = weak.upgrade() else { return };
-                let Some(current) = app.current_position(String::new()) else { return };
-                {
-                    let mut config = app.config.borrow_mut();
-                    if let Some(p) = config.positions.get_mut(index) {
-                        p.pan = current.pan;
-                        p.tilt = current.tilt;
-                        p.zoom = current.zoom;
-                    }
-                    config.save();
-                }
-                app.rebuild_positions();
-                app.toast(tr("Position updated"));
-            });
-            let weak = Rc::downgrade(self);
-            delete.connect_clicked(move |_| {
-                let Some(app) = weak.upgrade() else { return };
-                {
-                    let mut config = app.config.borrow_mut();
-                    if index < config.positions.len() {
-                        config.positions.remove(index);
-                    }
-                    config.save();
-                }
-                app.rebuild_positions();
-            });
-            self.positions_list.append(&row);
         }
+    }
+
+    /// A small map of where a position points: the frame shrinks as the zoom grows.
+    fn position_map(&self, position: &Position) -> gtk::Fixed {
+        const SIZE: i32 = 34;
+        let (pan_min, pan_max) = self.pan_range.get();
+        let (tilt_min, tilt_max) = self.tilt_range.get();
+        let share = |value: i32, min: i32, max: i32| match max > min {
+            true => ((value - min) as f64 / (max - min) as f64).clamp(0.0, 1.0),
+            false => 0.5,
+        };
+        let width = (18.0 * 100.0 / position.zoom.max(100) as f64).max(6.0);
+        let height = width * 9.0 / 16.0;
+        let x = share(position.pan, pan_min, pan_max) * (SIZE as f64 - width);
+        let y = (1.0 - share(position.tilt, tilt_min, tilt_max)) * (SIZE as f64 - height);
+        let map = gtk::Fixed::builder().width_request(SIZE).height_request(SIZE).valign(gtk::Align::Center).css_classes(["position-map"]).build();
+        let marker = gtk::Box::builder().width_request(width as i32).height_request(height as i32).css_classes(["position-marker"]).build();
+        map.put(&marker, x, y);
+        map
+    }
+
+    fn position_tile(self: &Rc<Self>, index: usize, position: &Position) -> gtk::Button {
+        let text = gtk::Box::builder().orientation(gtk::Orientation::Vertical).hexpand(true).valign(gtk::Align::Center).build();
+        text.append(
+            &gtk::Label::builder()
+                .label(position.name.as_str())
+                .xalign(0.0)
+                .ellipsize(gtk::pango::EllipsizeMode::End)
+                .css_classes(["heading"])
+                .build(),
+        );
+        text.append(
+            &gtk::Label::builder()
+                .label(format!("{}×", zoom_factor(position.zoom)))
+                .xalign(0.0)
+                .css_classes(["dim-label", "caption", "numeric"])
+                .build(),
+        );
+        let inner = gtk::Box::builder().spacing(6).build();
+        inner.append(&self.position_map(position));
+        inner.append(&text);
+        let tooltip = format!(
+            "{}\n{}",
+            position_summary(position),
+            tr("Click to move the camera there. Right-click to replace or delete.")
+        );
+        let tile = gtk::Button::builder()
+            .child(&inner)
+            .tooltip_text(tooltip)
+            .css_classes(["flat", "position-tile"])
+            .build();
+        let weak = Rc::downgrade(self);
+        tile.connect_clicked(move |_| {
+            if let Some(app) = weak.upgrade() {
+                app.goto_position(index);
+            }
+        });
+        self.attach_position_menu(&tile, index);
+        tile
+    }
+
+    /// Right-click, a long press or the Menu key opens replace and delete.
+    fn attach_position_menu(self: &Rc<Self>, tile: &gtk::Button, index: usize) {
+        let actions = gio::SimpleActionGroup::new();
+        let replace = gio::SimpleAction::new("replace", None);
+        let weak = Rc::downgrade(self);
+        replace.connect_activate(move |_, _| {
+            let Some(app) = weak.upgrade() else { return };
+            let Some(current) = app.current_position(String::new()) else { return };
+            {
+                let mut config = app.config.borrow_mut();
+                if let Some(p) = config.positions.get_mut(index) {
+                    p.pan = current.pan;
+                    p.tilt = current.tilt;
+                    p.zoom = current.zoom;
+                }
+                config.save();
+            }
+            app.rebuild_positions_later();
+            app.toast(tr("Position updated"));
+        });
+        actions.add_action(&replace);
+        let delete = gio::SimpleAction::new("delete", None);
+        let weak = Rc::downgrade(self);
+        delete.connect_activate(move |_, _| {
+            let Some(app) = weak.upgrade() else { return };
+            {
+                let mut config = app.config.borrow_mut();
+                if index < config.positions.len() {
+                    config.positions.remove(index);
+                }
+                config.save();
+            }
+            app.rebuild_positions_later();
+        });
+        actions.add_action(&delete);
+        tile.insert_action_group("position", Some(&actions));
+
+        let menu = gio::Menu::new();
+        menu.append(Some(tr("Replace with the current position")), Some("position.replace"));
+        menu.append(Some(tr("Delete position")), Some("position.delete"));
+        let popover = gtk::PopoverMenu::from_model(Some(&menu));
+        popover.set_parent(tile);
+        popover.set_has_arrow(false);
+        let parent = popover.clone();
+        tile.connect_destroy(move |_| parent.unparent());
+
+        let show = {
+            let popover = popover.clone();
+            move |x: f64, y: f64| {
+                popover.set_pointing_to(Some(&gdk::Rectangle::new(x as i32, y as i32, 1, 1)));
+                popover.popup();
+            }
+        };
+        let right_click = gtk::GestureClick::builder().button(gdk::BUTTON_SECONDARY).build();
+        let open = show.clone();
+        right_click.connect_pressed(move |_, _, x, y| open(x, y));
+        tile.add_controller(right_click);
+        let long_press = gtk::GestureLongPress::new();
+        let open = show.clone();
+        long_press.connect_pressed(move |_, x, y| open(x, y));
+        tile.add_controller(long_press);
+        let keys = gtk::EventControllerKey::new();
+        keys.connect_key_pressed(move |_, key, _, modifiers| {
+            let shift_f10 = key == gdk::Key::F10 && modifiers.contains(gdk::ModifierType::SHIFT_MASK);
+            if key != gdk::Key::Menu && !shift_f10 {
+                return glib::Propagation::Proceed;
+            }
+            show(0.0, 0.0);
+            glib::Propagation::Stop
+        });
+        tile.add_controller(keys);
+    }
+
+    /// The menu that asks for this belongs to a tile that is about to go.
+    fn rebuild_positions_later(self: &Rc<Self>) {
+        let weak = Rc::downgrade(self);
+        glib::idle_add_local_once(move || {
+            if let Some(app) = weak.upgrade() {
+                app.rebuild_positions();
+            }
+        });
     }
 
     fn current_position(&self, name: String) -> Option<Position> {
@@ -2457,6 +2797,7 @@ impl App {
         let size = if virtual_camera.is_some() { config.virtual_camera_size() } else { config.preview_size() };
         drop(config);
         self.stream_has_virtual.set(virtual_camera.is_some());
+        self.stream_height.set(size.1);
         self.show_preview.store(self.wants_preview(), Ordering::Relaxed);
         let options = preview::Options {
             device: cam.info.path.clone(),
@@ -2494,6 +2835,7 @@ impl App {
         self.stream_has_virtual.set(false);
         self.stream_live.set(false);
         self.virtual_badge.set_visible(false);
+        self.stream_info.set_visible(false);
     }
 
     /// Shows the video or the "preview is off" page, and the virtual camera badge.
@@ -2590,6 +2932,7 @@ impl App {
             frame.width as usize * 3,
         );
         self.picture.set_paintable(Some(&texture));
+        self.frames_shown.set(self.frames_shown.get() + 1);
         *self.last_jpeg.borrow_mut() = Some(frame.jpeg);
     }
 
@@ -2927,6 +3270,7 @@ impl App {
             ("Ctrl + P", tr("Preview on/off")),
             ("Ctrl + S", tr("Take photo")),
             ("F9", tr("Show/hide settings")),
+            ("F11", tr("Fullscreen preview")),
             ("Ctrl + Q", tr("Quit")),
         ];
         let text: Vec<String> = shortcuts.iter().map(|(keys, what)| format!("{keys}\t{what}")).collect();

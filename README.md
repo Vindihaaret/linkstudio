@@ -16,14 +16,14 @@ of its own.
 * **Live preview** in 720p, 1080p or 4K, with rule-of-thirds lines, fullscreen and photos saved to
   `~/Pictures/Link Studio`.
 * **Gimbal control**: pan, tilt and zoom with buttons or the keyboard, saved positions, centering and a
-  privacy mode that points the camera down.
+  privacy mode that points the camera down – also automatically when the screen is locked, if you want.
 * **AI tracking** with framing (head, upper body, full body), plus an overview of the camera's hand
   gestures.
 * **Image settings**: exposure compensation, brightness, contrast, saturation, hue, sharpness, white
   balance, focus and anti-flicker – and **profiles** that can be applied whenever the camera connects.
 * **Virtual camera** "Link Studio Camera" for Teams, Zoom, OBS and browsers, so the preview and a meeting
   can use the camera at the same time.
-* **Status icon** with saved positions, profiles, the virtual camera and AI tracking at hand; optionally keeps running there when
+* **Status icon** with saved positions, profiles, the virtual camera, AI tracking and privacy mode at hand; optionally keeps running there when
   the window is closed, and can start at login.
 * **Claude integration (MCP)**, off by default: let Claude tune the picture and framing for you –
   optionally looking through the camera.
@@ -154,7 +154,8 @@ icon (Ctrl+Q) to stop.
 ## Status icon
 
 Link Studio shows a status icon (StatusNotifierItem) with Show, Saved Positions, Profiles, Virtual camera,
-AI tracking and Quit – so you can point the camera or change the look without opening the window. KDE
+AI tracking, Privacy and Quit – so you can point the camera or change the look without opening the window.
+AI tracking is greyed out while the camera is not streaming, since it only tracks then. KDE
 Plasma shows it out of the box; GNOME needs the
 [AppIndicator extension](https://extensions.gnome.org/extension/615/appindicator-support/).
 
@@ -165,6 +166,9 @@ Under **Preferences → General → Window**:
   use it.
 * **Start at login** – adds an autostart entry that runs `linkstudio --minimized`, which starts in the
   status icon without opening the window.
+
+Under **Preferences → General → Privacy**, **Privacy mode when the screen is locked** points the camera
+down when you lock the screen (GNOME and KDE) and back again when you unlock it. It is off by default.
 
 On KDE Plasma the app keeps its libadwaita (GNOME) look and its own title bar; light/dark and the accent
 color are taken from Plasma through the desktop portal.
@@ -235,7 +239,7 @@ Tools: `get_status`, `take_snapshot`, `set_image_settings`, `reset_image_setting
 | Ctrl + arrow keys | Move the camera |
 | Ctrl + plus / minus | Zoom in / out |
 | Ctrl + Home | Center the camera |
-| Ctrl + 1–9 | Go to a saved position (right-click a position to replace or delete it) |
+| Ctrl + 1–9 | Go to a saved position (right-click a position to rename, replace, move or delete it) |
 | Ctrl + T | AI tracking on/off |
 | Ctrl + P | Preview on/off |
 | Ctrl + S | Take a photo |
@@ -259,7 +263,7 @@ Tools: `get_status`, `take_snapshot`, `set_image_settings`, `reset_image_setting
 | Path | Contents |
 |---|---|
 | `~/.local/bin/linkstudio` | The program |
-| `~/.config/linkstudio/config.json` | Settings, saved positions and profiles |
+| `~/.config/linkstudio/config.json` | Settings, saved positions and profiles (a file that cannot be read is kept as `config.json.damaged`) |
 | `~/.config/autostart/io.github.linkstudio.LinkStudio.desktop` | Start at login (when turned on) |
 | `~/Pictures/Link Studio/` | Photos |
 | `/etc/modprobe.d/linkstudio-v4l2loopback.conf`, `/etc/modules-load.d/linkstudio-v4l2loopback.conf` | Virtual camera setup |

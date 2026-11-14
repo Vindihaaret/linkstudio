@@ -195,3 +195,38 @@ fn parse_po(text: &'static str) -> Catalog {
     flush(&mut id, &mut value, fuzzy);
     map
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reads_po_entries() {
+        let po = "msgid \"\"\nmsgstr \"Header: x\\n\"\n\n\
+                  msgid \"Quit\"\nmsgstr \"Avslutt\"\n\n\
+                  #, fuzzy\nmsgid \"Guess\"\nmsgstr \"Gjett\"\n\n\
+                  msgid \"Empty\"\nmsgstr \"\"\n\n\
+                  msgid \"\"\n\"Long \"\n\"text\"\nmsgstr \"\"\n\"Lang \\\"tekst\\\"\\n\"\n";
+        let catalog = parse_po(po);
+        assert_eq!(catalog.get("Quit"), Some(&"Avslutt"));
+        assert_eq!(catalog.get("Guess"), None);
+        assert_eq!(catalog.get("Empty"), None);
+        assert_eq!(catalog.get("Long text"), Some(&"Lang \"tekst\"\n"));
+        assert_eq!(catalog.len(), 2);
+    }
+
+    #[test]
+    fn every_catalog_parses() {
+        for (lang, po) in CATALOGS {
+            assert!(parse_po(po).len() > 100, "{lang} has too few translations");
+        }
+    }
+
+    #[test]
+    fn fills_placeholders() {
+        // Not literals in the call, so xgettext does not pick them up.
+        let (both, one): (&'static str, &'static str) = ("{} and {}", "{} only");
+        assert_eq!(trf(both, &[&1, &"two"]), "1 and two");
+        assert_eq!(trf(one, &[]), " only");
+    }
+}

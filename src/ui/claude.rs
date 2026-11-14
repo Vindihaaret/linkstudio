@@ -232,7 +232,11 @@ impl App {
         if needs_awake && !self.stream_live.get() {
             let method = method.to_owned();
             self.claude_when_awake(Box::new(move |app| {
-                if let Err(message) = app.claude_dispatch(&method, &args) {
+                // The user may have turned on privacy mode, or turned Claude
+                // off, while the camera was waking up.
+                let moves = moves || enables_tracking;
+                let result = app.claude_check(false, moves).and_then(|()| app.claude_dispatch(&method, &args));
+                if let Err(message) = result {
                     app.claude_notice(&message);
                 }
             }));
@@ -610,6 +614,13 @@ impl App {
         let pending: Vec<Reply> = self.claude_pending.borrow_mut().drain(..).map(|(_, reply)| reply).collect();
         if pending.is_empty() {
             return;
+        }
+        // Privacy mode or the permission may have changed while the request waited.
+        if let Err(message) = self.claude_check(true, false) {
+            for reply in pending {
+                reply.error(message.clone());
+            }
+            return self.finish_claude_snapshot();
         }
         let data = base64::engine::general_purpose::STANDARD.encode(&jpeg);
         let text = format!(

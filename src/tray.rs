@@ -14,6 +14,7 @@ pub enum Command {
     Show,
     ToggleVirtualCamera,
     ToggleTracking,
+    TogglePrivacy,
     /// Index into the saved positions.
     GotoPosition(usize),
     /// Index into the saved profiles.
@@ -28,6 +29,9 @@ pub struct State {
     pub virtual_available: bool,
     pub virtual_on: bool,
     pub tracking_on: bool,
+    /// The camera only tracks while it streams (preview or virtual camera).
+    pub streaming: bool,
+    pub privacy: bool,
     /// Names of the saved positions and profiles, in the app's order.
     pub positions: Vec<String>,
     pub profiles: Vec<String>,
@@ -119,8 +123,16 @@ impl ksni::Tray for LinkTray {
             CheckmarkItem {
                 label: tr("AI tracking").into(),
                 checked: self.state.tracking_on,
-                enabled: self.state.connected,
+                enabled: self.state.connected && self.state.streaming,
                 activate: Box::new(|this: &mut Self| this.send(Command::ToggleTracking)),
+                ..Default::default()
+            }
+            .into(),
+            CheckmarkItem {
+                label: tr("Privacy").into(),
+                checked: self.state.privacy,
+                enabled: self.state.connected,
+                activate: Box::new(|this: &mut Self| this.send(Command::TogglePrivacy)),
                 ..Default::default()
             }
             .into(),

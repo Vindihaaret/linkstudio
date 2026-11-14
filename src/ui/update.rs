@@ -1,6 +1,7 @@
 //! Updates from GitHub, like Vifte: an automatic check once a month (can be
-//! turned off) and a manual one. A new release is downloaded as source, built
-//! with its own install.sh and installed into ~/.local – no root needed.
+//! turned off) and a manual one. A new release is downloaded as a ready-made
+//! program (or as source and built, where there is none) and installed into
+//! ~/.local with its own install.sh – no root needed.
 //!
 //! The check uses GitHub's public API through `curl`; nothing about the user
 //! is sent.
@@ -477,6 +478,22 @@ mod tests {
         assert!(is_newer("v99.0.0"));
         assert!(!is_newer(&format!("v{}", env!("CARGO_PKG_VERSION"))));
         assert!(!is_newer("v0.0.1"));
+    }
+
+    #[test]
+    fn releases() {
+        let release = release_info(r#"{"tag_name":"v1.2.3","body":"- New","html_url":"https://example.org/r"}"#).unwrap();
+        assert_eq!((release.tag.as_str(), release.version.as_str(), release.notes.as_str()), ("v1.2.3", "1.2.3", "• New"));
+        assert!(release_info(r#"{"tag_name":"v1.2.3","prerelease":true}"#).is_err());
+        assert!(release_info(r#"{"tag_name":"v1.2.3","draft":true}"#).is_err());
+        assert!(release_info(r#"{"tag_name":"nightly"}"#).is_err());
+        assert!(release_info("not json").is_err());
+    }
+
+    #[test]
+    fn long_notes_are_cut_at_a_line() {
+        let text = plain_notes(&"A line of release notes.\n".repeat(100));
+        assert!(text.ends_with("\n…") && text.chars().count() < 920);
     }
 
     #[test]

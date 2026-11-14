@@ -168,6 +168,18 @@ pub fn start_tray(application: &adw::Application) {
                     let on = !app.tracking_on.get();
                     app.set_tracking(on);
                 }
+                (tray::Command::GotoPosition(index), Some(app)) => {
+                    // With the window hidden the camera sleeps and ignores moves:
+                    // wake it the way Claude's requests do, and let it sleep again.
+                    app.claude_keep_awake();
+                    app.claude_when_awake(Box::new(move |app| app.goto_position(index)));
+                }
+                (tray::Command::ApplyProfile(index), Some(app)) => {
+                    let profile = app.config.borrow().profiles.get(index).cloned();
+                    if let Some(profile) = profile {
+                        app.apply_profile(&profile);
+                    }
+                }
                 (_, None) => {}
             }
         }
@@ -442,7 +454,7 @@ pub struct App {
     claude_after_wake: RefCell<Vec<claude::WakeAction>>,
     claude_idle: RefCell<Option<glib::SourceId>>,
     /// Last state pushed to the status icon, to avoid needless D-Bus updates.
-    tray_state: Cell<Option<tray::State>>,
+    tray_state: RefCell<Option<tray::State>>,
     bound: RefCell<Vec<Bound>>,
     exposure: RefCell<Option<gtk::Scale>>,
     tracking: RefCell<Option<TrackingRows>>,
@@ -936,7 +948,7 @@ impl App {
             claude_badge_timeout: RefCell::new(None),
             claude_after_wake: RefCell::new(Vec::new()),
             claude_idle: RefCell::new(None),
-            tray_state: Cell::new(None),
+            tray_state: RefCell::new(None),
             bound: RefCell::new(Vec::new()),
             exposure: RefCell::new(None),
             tracking: RefCell::new(None),
@@ -1068,10 +1080,13 @@ impl App {
             virtual_available: vcam::find_device().is_some(),
             virtual_on: self.stream_has_virtual.get(),
             tracking_on: self.tracking_on.get(),
+            positions: self.config.borrow().positions.iter().map(|p| p.name.clone()).collect(),
+            profiles: self.config.borrow().profiles.iter().map(|p| p.name.clone()).collect(),
         };
-        if self.tray_state.replace(Some(state)) == Some(state) {
+        if self.tray_state.borrow().as_ref() == Some(&state) {
             return;
         }
+        self.tray_state.replace(Some(state.clone()));
         TRAY.with(|tray| {
             if let Some(handle) = tray.borrow().as_ref() {
                 handle.update(|tray| tray.state = state);
@@ -2165,6 +2180,7 @@ impl App {
     }
 
     fn rebuild_profiles(self: &Rc<Self>) {
+        self.sync_tray();
         let Some(group) = self.profiles_group.borrow().clone() else { return };
         for row in self.profile_rows.borrow_mut().drain(..) {
             group.remove(&row);
@@ -2539,6 +2555,7 @@ impl App {
     // ----- Saved positions -----
 
     fn rebuild_positions(self: &Rc<Self>) {
+        self.sync_tray();
         self.positions_list.remove_all();
         let positions = self.config.borrow().positions.clone();
         self.positions_empty.set_visible(positions.is_empty());

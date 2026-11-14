@@ -273,7 +273,7 @@ impl App {
 
     /// Runs `action` once the camera streams and has settled, starting a
     /// stream for Claude if nothing else is streaming.
-    fn claude_when_awake(self: &Rc<Self>, action: WakeAction) {
+    pub(super) fn claude_when_awake(self: &Rc<Self>, action: WakeAction) {
         if self.stream_live.get() {
             return action(self);
         }
@@ -286,7 +286,7 @@ impl App {
     }
 
     /// Restarts the countdown after which a stream started for Claude stops.
-    fn claude_keep_awake(self: &Rc<Self>) {
+    pub(super) fn claude_keep_awake(self: &Rc<Self>) {
         if let Some(source) = self.claude_idle.borrow_mut().take() {
             source.remove();
         }

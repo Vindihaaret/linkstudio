@@ -23,7 +23,7 @@ of its own.
   balance, focus and anti-flicker – and **profiles** that can be applied whenever the camera connects.
 * **Virtual camera** "Link Studio Camera" for Teams, Zoom, OBS and browsers, so the preview and a meeting
   can use the camera at the same time.
-* **Status icon** with the virtual camera and AI tracking at hand; optionally keeps running there when
+* **Status icon** with saved positions, profiles, the virtual camera and AI tracking at hand; optionally keeps running there when
   the window is closed, and can start at login.
 * **Claude integration (MCP)**, off by default: let Claude tune the picture and framing for you –
   optionally looking through the camera.
@@ -153,7 +153,8 @@ icon (Ctrl+Q) to stop.
 
 ## Status icon
 
-Link Studio shows a status icon (StatusNotifierItem) with Show, Virtual camera, AI tracking and Quit. KDE
+Link Studio shows a status icon (StatusNotifierItem) with Show, Saved Positions, Profiles, Virtual camera,
+AI tracking and Quit – so you can point the camera or change the look without opening the window. KDE
 Plasma shows it out of the box; GNOME needs the
 [AppIndicator extension](https://extensions.gnome.org/extension/615/appindicator-support/).
 

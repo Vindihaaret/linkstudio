@@ -4,7 +4,7 @@
 
 use gtk::glib;
 use ksni::blocking::{Handle, TrayMethods};
-use ksni::menu::{CheckmarkItem, StandardItem};
+use ksni::menu::{CheckmarkItem, StandardItem, SubMenu};
 use ksni::{MenuItem, ToolTip};
 
 use crate::i18n::tr;
@@ -14,16 +14,46 @@ pub enum Command {
     Show,
     ToggleVirtualCamera,
     ToggleTracking,
+    /// Index into the saved positions.
+    GotoPosition(usize),
+    /// Index into the saved profiles.
+    ApplyProfile(usize),
     Quit,
 }
 
 /// What the icon shows; the UI pushes changes with `Handle::update`.
-#[derive(Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct State {
     pub connected: bool,
     pub virtual_available: bool,
     pub virtual_on: bool,
     pub tracking_on: bool,
+    /// Names of the saved positions and profiles, in the app's order.
+    pub positions: Vec<String>,
+    pub profiles: Vec<String>,
+}
+
+/// A menu label shows a single underscore as an access key, so double it.
+fn label(name: &str) -> String {
+    name.replace('_', "__")
+}
+
+/// A submenu with one entry per saved name; greyed out when there are none
+/// or the camera is not connected.
+fn saved_menu(title: &str, names: &[String], connected: bool, command: fn(usize) -> Command) -> MenuItem<LinkTray> {
+    let items = names
+        .iter()
+        .enumerate()
+        .map(|(index, name)| {
+            StandardItem {
+                label: label(name),
+                activate: Box::new(move |this: &mut LinkTray| this.send(command(index))),
+                ..Default::default()
+            }
+            .into()
+        })
+        .collect();
+    SubMenu { label: title.into(), enabled: connected && !names.is_empty(), submenu: items, ..Default::default() }.into()
 }
 
 pub struct LinkTray {
@@ -74,6 +104,9 @@ impl ksni::Tray for LinkTray {
                 ..Default::default()
             }
             .into(),
+            MenuItem::Separator,
+            saved_menu(tr("Saved Positions"), &self.state.positions, self.state.connected, Command::GotoPosition),
+            saved_menu(tr("Profiles"), &self.state.profiles, self.state.connected, Command::ApplyProfile),
             MenuItem::Separator,
             CheckmarkItem {
                 label: tr("Virtual camera").into(),

@@ -298,6 +298,10 @@ impl App {
         let source = glib::timeout_add_local_once(CLAUDE_IDLE, move || {
             let Some(app) = weak.upgrade() else { return };
             app.claude_idle.borrow_mut().take();
+            // A camera that is slow to wake still has work waiting: keep it on.
+            if !app.claude_after_wake.borrow().is_empty() {
+                return app.claude_keep_awake();
+            }
             if app.claude_pending.borrow().is_empty() && app.claude_stream.replace(false) {
                 app.restart_stream();
             }
@@ -603,11 +607,22 @@ impl App {
         let weak = Rc::downgrade(self);
         glib::timeout_add_local_once(WAKE_SETTLE, move || {
             let Some(app) = weak.upgrade() else { return };
-            let actions: Vec<_> = app.claude_after_wake.borrow_mut().drain(..).collect();
-            for action in actions {
-                action(&app);
-            }
+            app.run_after_wake();
         });
+    }
+
+    /// Runs what waited for the camera to wake up, then keeps it awake a
+    /// while longer so the gimbal reaches its target before the camera
+    /// sleeps again.
+    pub(super) fn run_after_wake(self: &Rc<Self>) {
+        let actions: Vec<_> = self.claude_after_wake.borrow_mut().drain(..).collect();
+        if actions.is_empty() {
+            return;
+        }
+        for action in actions {
+            action(self);
+        }
+        self.claude_keep_awake();
     }
 
     pub(super) fn claude_snapshot_ready(self: &Rc<Self>, jpeg: Vec<u8>, width: usize, height: usize) {

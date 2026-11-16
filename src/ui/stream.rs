@@ -204,6 +204,11 @@ impl App {
     pub(super) fn preview_failed(self: &Rc<Self>, message: &str, retry: bool) {
         let had_virtual = self.stream_has_virtual.get();
         self.stop_preview();
+        // Moves that waited for our stream to wake the camera: when another
+        // program (such as Teams) has the camera, it is already awake, so do
+        // them now instead of leaving them queued for a later stream.
+        self.claude_stream.set(false);
+        self.run_after_wake();
         if retry && (self.wants_preview() || self.virtual_camera_device().is_some()) {
             // Keep the preview and the virtual camera switched on and start
             // again by itself once the camera is free or awake again.

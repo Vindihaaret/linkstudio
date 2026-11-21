@@ -12,7 +12,8 @@ Controller only exists for Windows and macOS; Link Studio brings its features to
 of its own.
 
 * **Native GTK 4 / libadwaita interface** that fits into GNOME, follows the light/dark theme and also
-  runs on KDE Plasma.
+  runs on KDE Plasma. The main window has a dark blue-black (or light grey-blue) background with
+  see-through cards and clear text; with high contrast turned on it uses the plain system colors.
 * **Live preview** in 720p, 1080p or 4K, with rule-of-thirds lines, fullscreen and photos saved to
   `~/Pictures/Link Studio`.
 * **Gimbal control**: pan, tilt and zoom with buttons or the keyboard, saved positions, centering and a

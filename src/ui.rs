@@ -112,7 +112,59 @@ const CSS: &str = r#"
 }
 .link-main list.boxed-list > row:first-child { border-top-left-radius: 16px; border-top-right-radius: 16px; }
 .link-main list.boxed-list > row:last-child { border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
+
+/* Background and contrast shared with Vifte: near black (dark) or light grey-blue (light) with a faint
+   blue glow at the top right, a see-through sidebar, clearer text. Not in high contrast, where the class
+   link-glass is missing. Only alpha() and plain colors: var() and color-mix() need a newer GTK. */
+.link-main.link-glass {
+  color: #F5F5F7;
+  background-color: #0D1016;
+  background-image: radial-gradient(75% 65% at 88% -12%, alpha(#6080BE, 0.20), transparent 70%),
+                    radial-gradient(55% 45% at 0% 100%, alpha(#465A82, 0.12), transparent 70%),
+                    linear-gradient(165deg, #141821, #0D1016 55%, #090B10);
+}
+.link-main.link-glass.link-light {
+  color: #1D1D1F;
+  background-color: #E8EBF0;
+  background-image: radial-gradient(75% 65% at 88% -12%, alpha(#7896CD, 0.22), transparent 70%),
+                    linear-gradient(165deg, #F2F4F8, #E8EBF0);
+}
+.link-glass > .content-pane { background: none; color: inherit; }
+.link-glass > .sidebar-pane, .link-glass > .sidebar-pane:backdrop {
+  background-color: alpha(white, 0.075); color: inherit; box-shadow: inset 1px 0 alpha(white, 0.09);
+}
+.link-glass.link-light > .sidebar-pane, .link-glass.link-light > .sidebar-pane:backdrop {
+  background-color: alpha(white, 0.62); box-shadow: inset 1px 0 alpha(black, 0.08);
+}
+/* Folded over the picture in a narrow window: the sidebar needs a solid background. */
+.link-glass.link-collapsed > .sidebar-pane, .link-glass.link-collapsed > .sidebar-pane:backdrop { background-color: #1A1E26; }
+.link-glass.link-light.link-collapsed > .sidebar-pane,
+.link-glass.link-light.link-collapsed > .sidebar-pane:backdrop { background-color: #F2F4F8; }
+.link-glass .dim-label { opacity: 1; color: #B4B8C2; }
+.link-glass.link-light .dim-label { color: #55585E; }
+.link-glass separator { background-color: alpha(white, 0.09); }
+.link-glass.link-light separator { background-color: alpha(black, 0.08); }
+.link-glass .control-card, .link-glass list.boxed-list {
+  background-color: alpha(white, 0.055);
+  box-shadow: inset 0 1px alpha(white, 0.09), inset 0 0 0 1px alpha(white, 0.06), 0 12px 32px alpha(black, 0.35);
+}
+.link-glass.link-light .control-card, .link-glass.link-light list.boxed-list {
+  background-color: alpha(white, 0.66);
+  box-shadow: inset 0 1px alpha(white, 0.9), inset 0 0 0 1px alpha(white, 0.55), 0 10px 28px alpha(#1E283C, 0.10);
+}
+.link-glass list.boxed-list > row { border-bottom-color: alpha(white, 0.09); }
+.link-glass.link-light list.boxed-list > row { border-bottom-color: alpha(black, 0.08); }
+.link-glass .preview-status { background-color: alpha(white, 0.04); }
+.link-glass.link-light .preview-status { background-color: alpha(white, 0.35); }
 "#;
+
+fn set_class(widget: &impl IsA<gtk::Widget>, class: &str, on: bool) {
+    if on {
+        widget.add_css_class(class);
+    } else {
+        widget.remove_css_class(class);
+    }
+}
 
 pub fn load_css() {
     let provider = gtk::CssProvider::new();
@@ -1034,21 +1086,22 @@ impl App {
         app
     }
 
-    /// The layered cards need other colors on the light background.
+    /// The layered cards need other colors on the light background, the shared Vifte background is
+    /// left out in high contrast, and the sidebar needs a solid background when it is folded over the picture.
     fn follow_style(&self) {
         let sync = {
             let split = self.split.clone();
             move |style: &adw::StyleManager| {
-                if style.is_dark() {
-                    split.remove_css_class("link-light");
-                } else {
-                    split.add_css_class("link-light");
-                }
+                set_class(&split, "link-light", !style.is_dark());
+                set_class(&split, "link-glass", !style.is_high_contrast());
             }
         };
         let style = adw::StyleManager::default();
         sync(&style);
-        style.connect_dark_notify(sync);
+        style.connect_dark_notify(sync.clone());
+        style.connect_high_contrast_notify(sync);
+        set_class(&self.split, "link-collapsed", self.split.is_collapsed());
+        self.split.connect_collapsed_notify(|split| set_class(split, "link-collapsed", split.is_collapsed()));
     }
 
     /// Development aid: render the window to a PNG and quit, since GNOME on

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Link Studio\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 14:34+0100\n"
+"POT-Creation-Date: 2026-11-21 14:10+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,7 +59,7 @@ msgstr ""
 msgid "Show Link Studio"
 msgstr ""
 
-#: src/tray.rs:112 src/ui.rs:842
+#: src/tray.rs:112 src/ui.rs:892
 msgid "Saved Positions"
 msgstr ""
 
@@ -67,19 +67,19 @@ msgstr ""
 msgid "Profiles"
 msgstr ""
 
-#: src/tray.rs:116 src/ui.rs:657
+#: src/tray.rs:116 src/ui.rs:707
 msgid "Virtual camera"
 msgstr ""
 
-#: src/tray.rs:124 src/ui.rs:655 src/ui.rs:1583
+#: src/tray.rs:124 src/ui.rs:705 src/ui.rs:1625
 msgid "AI tracking"
 msgstr ""
 
-#: src/tray.rs:132 src/ui/dialogs.rs:69 src/ui.rs:656 src/ui.rs:795
+#: src/tray.rs:132 src/ui/dialogs.rs:69 src/ui.rs:706 src/ui.rs:845
 msgid "Privacy"
 msgstr ""
 
-#: src/tray.rs:141 src/ui/dialogs.rs:271 src/ui.rs:621
+#: src/tray.rs:141 src/ui/dialogs.rs:271 src/ui.rs:671
 msgid "Quit"
 msgstr ""
 
@@ -115,59 +115,59 @@ msgstr ""
 msgid "Claude centered the camera"
 msgstr ""
 
-#: src/ui/claude.rs:435
+#: src/ui/claude.rs:439
 msgid "Claude changed: {}"
 msgstr ""
 
-#: src/ui/claude.rs:471
+#: src/ui/claude.rs:475
 msgid "Claude moved the camera"
 msgstr ""
 
-#: src/ui/claude.rs:492
+#: src/ui/claude.rs:496
 msgid "Claude changed AI tracking"
 msgstr ""
 
-#: src/ui/claude.rs:509
+#: src/ui/claude.rs:513
 msgid "Claude moved the camera to “{}”"
 msgstr ""
 
-#: src/ui/claude.rs:525
+#: src/ui/claude.rs:529
 msgid "Claude saved the position “{}”"
 msgstr ""
 
-#: src/ui/claude.rs:539
+#: src/ui/claude.rs:543
 msgid "Claude saved the profile “{}”"
 msgstr ""
 
-#: src/ui/claude.rs:548
+#: src/ui/claude.rs:552
 msgid "Claude applied the profile “{}”"
 msgstr ""
 
-#: src/ui/claude.rs:558
+#: src/ui/claude.rs:562
 msgid "Claude turned the virtual camera on"
 msgstr ""
 
-#: src/ui/claude.rs:558
+#: src/ui/claude.rs:562
 msgid "Claude turned the virtual camera off"
 msgstr ""
 
-#: src/ui/claude.rs:569
+#: src/ui/claude.rs:573
 msgid "Claude turned privacy mode on"
 msgstr ""
 
-#: src/ui/claude.rs:633
+#: src/ui/claude.rs:648
 msgid "Claude took a picture through the camera"
 msgstr ""
 
-#: src/ui/claude.rs:662
+#: src/ui/claude.rs:677
 msgid "Claude"
 msgstr ""
 
-#: src/ui/claude.rs:673
+#: src/ui/claude.rs:688
 msgid "Claude Integration (MCP)"
 msgstr ""
 
-#: src/ui/claude.rs:674
+#: src/ui/claude.rs:689
 msgid ""
 "Lets Claude, in Claude Code or Claude Desktop, read and change the camera "
 "settings, move the gimbal and manage positions and profiles for you. "
@@ -175,83 +175,83 @@ msgid ""
 "time."
 msgstr ""
 
-#: src/ui/claude.rs:677
+#: src/ui/claude.rs:692
 msgid "Allow control from Claude"
 msgstr ""
 
-#: src/ui/claude.rs:678
+#: src/ui/claude.rs:693
 msgid ""
 "Settings, gimbal, AI tracking, positions, profiles and the virtual camera"
 msgstr ""
 
-#: src/ui/claude.rs:682
+#: src/ui/claude.rs:697
 msgid "Allow Claude to see through the camera"
 msgstr ""
 
-#: src/ui/claude.rs:683
+#: src/ui/claude.rs:698
 msgid ""
 "Claude can take pictures to judge lighting and framing. The pictures are "
 "sent to Anthropic to be analyzed, like an image you paste into a chat. A "
 "badge in the preview shows each time."
 msgstr ""
 
-#: src/ui/claude.rs:688
+#: src/ui/claude.rs:703
 msgid "Privacy mode always wins"
 msgstr ""
 
-#: src/ui/claude.rs:689
+#: src/ui/claude.rs:704
 msgid ""
 "While privacy mode is on, Claude can neither see through nor move the "
 "camera. Claude can turn privacy mode on, but only you can turn it off."
 msgstr ""
 
-#: src/ui/claude.rs:698
+#: src/ui/claude.rs:713
 msgid "Connect Claude"
 msgstr ""
 
-#: src/ui/claude.rs:699
+#: src/ui/claude.rs:714
 msgid ""
 "Start a new Claude session after connecting, then ask for example “Make me "
 "look good for my meeting”."
 msgstr ""
 
-#: src/ui/claude.rs:702
+#: src/ui/claude.rs:717
 msgid "Claude Code"
 msgstr ""
 
-#: src/ui/claude.rs:707
+#: src/ui/claude.rs:722
 msgid "Add"
 msgstr ""
 
-#: src/ui/claude.rs:710 src/ui/claude.rs:722
+#: src/ui/claude.rs:725 src/ui/claude.rs:737
 msgid "Copy"
 msgstr ""
 
-#: src/ui/claude.rs:717
+#: src/ui/claude.rs:732
 msgid "Claude Desktop"
 msgstr ""
 
-#: src/ui/claude.rs:718
+#: src/ui/claude.rs:733
 msgid "Add this to claude_desktop_config.json"
 msgstr ""
 
-#: src/ui/claude.rs:752
+#: src/ui/claude.rs:767
 msgid "Copied"
 msgstr ""
 
-#: src/ui/claude.rs:766
+#: src/ui/claude.rs:781
 msgid "Could not run the claude command"
 msgstr ""
 
-#: src/ui/claude.rs:775
+#: src/ui/claude.rs:790
 msgid "Link Studio was added to Claude Code"
 msgstr ""
 
-#: src/ui/claude.rs:779
+#: src/ui/claude.rs:794
 msgid "Link Studio is already added to Claude Code"
 msgstr ""
 
-#: src/ui/claude.rs:781 src/ui/claude.rs:784
+#: src/ui/claude.rs:796 src/ui/claude.rs:799
 msgid "Could not add it: {}"
 msgstr ""
 
@@ -453,7 +453,7 @@ msgstr ""
 msgid "Fullscreen preview"
 msgstr ""
 
-#: src/ui/dialogs.rs:274 src/ui.rs:617
+#: src/ui/dialogs.rs:274 src/ui.rs:667
 msgid "Keyboard Shortcuts"
 msgstr ""
 
@@ -505,7 +505,7 @@ msgstr ""
 msgid "Position {}"
 msgstr ""
 
-#: src/ui/positions.rs:267 src/ui.rs:837
+#: src/ui/positions.rs:267 src/ui.rs:887
 msgid "Save Position"
 msgstr ""
 
@@ -537,257 +537,257 @@ msgstr ""
 msgid "4K (2160p)"
 msgstr ""
 
-#: src/ui.rs:244 src/ui/sidebar.rs:13
+#: src/ui.rs:296 src/ui/sidebar.rs:13
 msgid "Image"
 msgstr ""
 
-#: src/ui.rs:250
+#: src/ui.rs:302
 msgid "Exposure"
 msgstr ""
 
-#: src/ui.rs:262
+#: src/ui.rs:314
 msgid "White balance"
 msgstr ""
 
-#: src/ui.rs:267 src/ui.rs:301
+#: src/ui.rs:319 src/ui.rs:353
 msgid "Focus"
 msgstr ""
 
-#: src/ui.rs:269
+#: src/ui.rs:321
 msgid "Flicker"
 msgstr ""
 
-#: src/ui.rs:271
+#: src/ui.rs:323
 msgid "Use 50 Hz in Europe and most of the world, 60 Hz in North America."
 msgstr ""
 
-#: src/ui.rs:287
+#: src/ui.rs:339
 msgid "Brightness"
 msgstr ""
 
-#: src/ui.rs:288
+#: src/ui.rs:340
 msgid "Contrast"
 msgstr ""
 
-#: src/ui.rs:289
+#: src/ui.rs:341
 msgid "Saturation"
 msgstr ""
 
-#: src/ui.rs:290
+#: src/ui.rs:342
 msgid "Hue"
 msgstr ""
 
-#: src/ui.rs:291
+#: src/ui.rs:343
 msgid "Sharpness"
 msgstr ""
 
-#: src/ui.rs:292
+#: src/ui.rs:344
 msgid "Gamma"
 msgstr ""
 
-#: src/ui.rs:293
+#: src/ui.rs:345
 msgid "Exposure mode"
 msgstr ""
 
-#: src/ui.rs:294
+#: src/ui.rs:346
 msgid "Exposure time"
 msgstr ""
 
-#: src/ui.rs:295
+#: src/ui.rs:347
 msgid "Allow lower frame rate"
 msgstr ""
 
-#: src/ui.rs:295
+#: src/ui.rs:347
 msgid "Gives a brighter image in dark rooms"
 msgstr ""
 
-#: src/ui.rs:296
+#: src/ui.rs:348
 msgid "Gain"
 msgstr ""
 
-#: src/ui.rs:297
+#: src/ui.rs:349
 msgid "Backlight compensation"
 msgstr ""
 
-#: src/ui.rs:298
+#: src/ui.rs:350
 msgid "Automatic white balance"
 msgstr ""
 
-#: src/ui.rs:299
+#: src/ui.rs:351
 msgid "Color temperature"
 msgstr ""
 
-#: src/ui.rs:299
+#: src/ui.rs:351
 msgid "Low is warmer, high is cooler"
 msgstr ""
 
-#: src/ui.rs:300
+#: src/ui.rs:352
 msgid "Autofocus"
 msgstr ""
 
-#: src/ui.rs:301
+#: src/ui.rs:353
 msgid "Low is near, high is far away"
 msgstr ""
 
-#: src/ui.rs:302
+#: src/ui.rs:354
 msgid "Anti-flicker"
 msgstr ""
 
-#: src/ui.rs:311
+#: src/ui.rs:363
 msgid "Off"
 msgstr ""
 
-#: src/ui.rs:312
+#: src/ui.rs:364
 msgid "Manual"
 msgstr ""
 
-#: src/ui.rs:313
+#: src/ui.rs:365
 msgid "Automatic"
 msgstr ""
 
-#: src/ui.rs:314
+#: src/ui.rs:366
 msgid "Shutter priority"
 msgstr ""
 
-#: src/ui.rs:342
+#: src/ui.rs:394
 msgid "Pan {}° · Tilt {}°"
 msgstr ""
 
-#: src/ui.rs:607
+#: src/ui.rs:657
 msgid "Looking for camera…"
 msgstr ""
 
-#: src/ui.rs:612
+#: src/ui.rs:662
 msgid "Preview on/off (Ctrl+P)"
 msgstr ""
 
-#: src/ui.rs:616
+#: src/ui.rs:666
 msgid "Preferences"
 msgstr ""
 
-#: src/ui.rs:618
+#: src/ui.rs:668
 msgid "Check for Updates…"
 msgstr ""
 
-#: src/ui.rs:619
+#: src/ui.rs:669
 msgid "About Link Studio"
 msgstr ""
 
-#: src/ui.rs:627
+#: src/ui.rs:677
 msgid "Main Menu"
 msgstr ""
 
-#: src/ui.rs:631
+#: src/ui.rs:681
 msgid "Show settings (F9)"
 msgstr ""
 
-#: src/ui.rs:658
+#: src/ui.rs:708
 msgid "Claude is looking"
 msgstr ""
 
-#: src/ui.rs:688
+#: src/ui.rs:738
 msgid "Rule-of-thirds lines (only in the preview)"
 msgstr ""
 
-#: src/ui.rs:694
+#: src/ui.rs:744
 msgid "Mirror the preview (does not affect other programs)"
 msgstr ""
 
-#: src/ui.rs:700
+#: src/ui.rs:750
 msgid "Take photo (Ctrl+S)"
 msgstr ""
 
-#: src/ui.rs:705 src/ui.rs:1453
+#: src/ui.rs:755 src/ui.rs:1495
 msgid "Fullscreen (F11)"
 msgstr ""
 
-#: src/ui.rs:716 src/ui/stream.rs:108 src/ui/stream.rs:239
+#: src/ui.rs:766 src/ui/stream.rs:108 src/ui/stream.rs:257
 msgid "Start Preview"
 msgstr ""
 
-#: src/ui.rs:722 src/ui/stream.rs:105 src/ui/stream.rs:110
+#: src/ui.rs:772 src/ui/stream.rs:105 src/ui/stream.rs:110
 msgid "Preview is off"
 msgstr ""
 
-#: src/ui.rs:724 src/ui/stream.rs:236
+#: src/ui.rs:774 src/ui/stream.rs:254
 msgid ""
 "Other programs, such as Teams or Zoom, can use the camera while the preview "
 "is off."
 msgstr ""
 
-#: src/ui.rs:740
+#: src/ui.rs:790
 msgid "Tilt up (Ctrl+↑)"
 msgstr ""
 
-#: src/ui.rs:741
+#: src/ui.rs:791
 msgid "Tilt down (Ctrl+↓)"
 msgstr ""
 
-#: src/ui.rs:742
+#: src/ui.rs:792
 msgid "Pan left (Ctrl+←)"
 msgstr ""
 
-#: src/ui.rs:743
+#: src/ui.rs:793
 msgid "Pan right (Ctrl+→)"
 msgstr ""
 
-#: src/ui.rs:744
+#: src/ui.rs:794
 msgid "Center the camera (Ctrl+Home)"
 msgstr ""
 
-#: src/ui.rs:772
+#: src/ui.rs:822
 msgid "Zoom out (Ctrl+−)"
 msgstr ""
 
-#: src/ui.rs:773
+#: src/ui.rs:823
 msgid "Zoom in (Ctrl++)"
 msgstr ""
 
-#: src/ui.rs:796
+#: src/ui.rs:846
 msgid "Point the camera down. Turn off to return to the previous position."
 msgstr ""
 
-#: src/ui.rs:807
+#: src/ui.rs:857
 msgid "Zoom"
 msgstr ""
 
-#: src/ui.rs:831
+#: src/ui.rs:881
 msgid "No saved positions yet"
 msgstr ""
 
-#: src/ui.rs:882
+#: src/ui.rs:932
 msgid "No Insta360 Link Found"
 msgstr ""
 
-#: src/ui.rs:883
+#: src/ui.rs:933
 msgid "Connect the camera with USB. Link Studio connects automatically."
 msgstr ""
 
-#: src/ui.rs:1228
+#: src/ui.rs:1278
 msgid "Could not zoom: {}"
 msgstr ""
 
-#: src/ui.rs:1453
+#: src/ui.rs:1495
 msgid "Leave fullscreen (Esc)"
 msgstr ""
 
-#: src/ui.rs:1463
+#: src/ui.rs:1505
 msgid "Cannot open the camera: {}"
 msgstr ""
 
-#: src/ui.rs:1477
+#: src/ui.rs:1519
 msgid "{} · connected"
 msgstr ""
 
-#: src/ui.rs:1500 src/ui/sidebar.rs:670
+#: src/ui.rs:1542 src/ui/sidebar.rs:670
 msgid "Profile “{}” applied"
 msgstr ""
 
-#: src/ui.rs:1523
+#: src/ui.rs:1565
 msgid "Not connected"
 msgstr ""
 
-#: src/ui.rs:1526
+#: src/ui.rs:1568
 msgid "The camera was disconnected"
 msgstr ""
 
@@ -1169,39 +1169,39 @@ msgid ""
 "choose Quit in its menu."
 msgstr ""
 
-#: src/ui/stream.rs:198
+#: src/ui/stream.rs:216
 msgid "Waiting for the camera"
 msgstr ""
 
-#: src/ui/stream.rs:199
+#: src/ui/stream.rs:217
 msgid "Link Studio tries again by itself."
 msgstr ""
 
-#: src/ui/stream.rs:218
+#: src/ui/stream.rs:236
 msgid "The virtual camera stopped"
 msgstr ""
 
-#: src/ui/stream.rs:224
+#: src/ui/stream.rs:242
 msgid "The preview stopped"
 msgstr ""
 
-#: src/ui/stream.rs:239
+#: src/ui/stream.rs:257
 msgid "Try Again"
 msgstr ""
 
-#: src/ui/stream.rs:245
+#: src/ui/stream.rs:263
 msgid "Start the preview to take a photo"
 msgstr ""
 
-#: src/ui/stream.rs:265
+#: src/ui/stream.rs:283
 msgid "Photo saved"
 msgstr ""
 
-#: src/ui/stream.rs:265
+#: src/ui/stream.rs:283
 msgid "Open"
 msgstr ""
 
-#: src/ui/stream.rs:276
+#: src/ui/stream.rs:294
 msgid "Could not save the photo: {}"
 msgstr ""
 

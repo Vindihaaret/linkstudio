@@ -18,6 +18,7 @@ use gtk::{gio, glib};
 use serde_json::{json, Map, Value};
 
 use super::{degrees, gimbal_position, reset_value, snap_degree, App, CURRENT, EXPOSURE_MAX_EV};
+use crate::debuglog::debug;
 use crate::camera::{cid, CtrlKind, EXPOSURE_UNITS_PER_EV};
 use crate::i18n::{tr, trf};
 
@@ -176,6 +177,14 @@ fn access_hero() -> (gtk::Box, impl Fn(bool, bool) + Clone + 'static) {
 
 impl App {
     fn claude_check(&self, needs_view: bool, moves_camera: bool) -> Result<(), String> {
+        let result = self.claude_check_inner(needs_view, moves_camera);
+        if let Err(message) = &result {
+            debug!("claude: refused: {message}");
+        }
+        result
+    }
+
+    fn claude_check_inner(&self, needs_view: bool, moves_camera: bool) -> Result<(), String> {
         let config = self.config.borrow();
         if !config.claude_control {
             return Err("Claude control is turned off. Ask the user to turn on “Allow control from Claude” in Link Studio → Preferences → Claude.".into());
@@ -210,6 +219,7 @@ impl App {
             Value::Object(map) => map,
             _ => Map::new(),
         };
+        debug!("claude: request {method} {}", Value::Object(args.clone()));
         let moves = matches!(method, "move_gimbal" | "center_gimbal" | "goto_position");
         let view = method == "take_snapshot";
         let enables_tracking = method == "set_tracking" && args.get("enabled").and_then(Value::as_bool) == Some(true);
@@ -236,13 +246,16 @@ impl App {
                 // off, while the camera was waking up.
                 let moves = moves || enables_tracking;
                 let result = app.claude_check(false, moves).and_then(|()| app.claude_dispatch(&method, &args));
+                debug!("claude: {method} after wake-up → {result:?}");
                 if let Err(message) = result {
                     app.claude_notice(&message);
                 }
             }));
             return reply.ok("The camera was asleep and is waking up; this happens in about three seconds. Wait before calling take_snapshot.");
         }
-        match self.claude_dispatch(method, &args) {
+        let result = self.claude_dispatch(method, &args);
+        debug!("claude: {method} → {}", if method == "get_status" { "status sent".into() } else { format!("{result:?}") });
+        match result {
             Ok(text) => reply.ok(text),
             Err(text) => reply.error(text),
         }
@@ -637,6 +650,7 @@ impl App {
             }
             return self.finish_claude_snapshot();
         }
+        debug!("claude: picture sent ({width}x{height}, {} bytes; the picture itself is not logged)", jpeg.len());
         let data = base64::engine::general_purpose::STANDARD.encode(&jpeg);
         let text = format!(
             "Picture {width}×{height}, as other people see it (not mirrored). Call get_status for the current settings."

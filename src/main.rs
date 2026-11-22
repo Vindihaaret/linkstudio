@@ -1,6 +1,7 @@
 mod autostart;
 mod camera;
 mod config;
+mod debuglog;
 mod i18n;
 mod mcp;
 mod preview;
@@ -16,8 +17,10 @@ pub const APP_ID: &str = "io.github.linkstudio.LinkStudio";
 
 fn main() -> glib::ExitCode {
     if std::env::args().nth(1).as_deref() == Some("mcp") {
+        debuglog::setup("mcp");
         return mcp::run();
     }
+    debuglog::setup("app");
     let config = config::Config::load();
     if let Some(lang) = &config.language {
         // Also covers strings from GTK and libadwaita themselves, which read
@@ -35,6 +38,7 @@ fn main() -> glib::ExitCode {
     let app = adw::Application::builder().application_id(APP_ID).build();
 
     app.connect_startup(move |app| {
+        debuglog::log_versions();
         gtk::Window::set_default_icon_name(APP_ID);
         ui::load_css();
         ui::apply_appearance(config.appearance);

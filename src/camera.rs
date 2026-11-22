@@ -246,7 +246,9 @@ impl Camera {
             .read(true)
             .write(true)
             .custom_flags(libc::O_NONBLOCK)
-            .open(&info.path)?;
+            .open(&info.path)
+            .inspect_err(|err| crate::debuglog::debug!("camera: open {} failed: {err}", info.path.display()))?;
+        crate::debuglog::debug!("camera: opened {} ({}, product {})", info.path.display(), info.name, info.product_id);
         Ok(Self { file, info })
     }
 
@@ -340,7 +342,12 @@ impl Camera {
 
     pub fn set(&self, id: u32, value: i32) -> io::Result<()> {
         let mut c = Control { id, value };
-        ioctl(self.fd(), VIDIOC_S_CTRL, &mut c)
+        let result = ioctl(self.fd(), VIDIOC_S_CTRL, &mut c);
+        match &result {
+            Ok(()) => crate::debuglog::debug!("camera: set control {id:#x} = {value}"),
+            Err(err) => crate::debuglog::debug!("camera: set control {id:#x} = {value} failed: {err}"),
+        }
+        result
     }
 
     fn xu_query(&self, unit: u8, selector: u8, query: u8, buf: &mut [u8]) -> io::Result<()> {
@@ -375,7 +382,12 @@ impl Camera {
         }
         let mut buf = vec![0u8; len];
         buf[..data.len()].copy_from_slice(data);
-        self.xu_query(unit, selector, UVC_SET_CUR, &mut buf)
+        let result = self.xu_query(unit, selector, UVC_SET_CUR, &mut buf);
+        match &result {
+            Ok(()) => crate::debuglog::debug!("camera: XU {unit}/{selector} set {data:02x?}"),
+            Err(err) => crate::debuglog::debug!("camera: XU {unit}/{selector} set {data:02x?} failed: {err}"),
+        }
+        result
     }
 
     /// Current mode, or `None` when the camera does not say. After a mode

@@ -14,6 +14,8 @@ explain in plain Norwegian, and do the work rather than describing it.
 - The Claude integration must stay fully opt-in and clearly described in the app and the README.
   "Privacy mode always wins" is a promise: every path that lets Claude see or move must go through
   `claude_check`, also after a delay.
+- The debug log must never contain pictures or the camera's serial number. Log new camera commands,
+  privileged commands and Claude paths with `debug!`.
 - User-facing text is English in the source, Norwegian in `po/nb.po`. Keep both complete
   (`translator-credits` is the only entry left empty).
 - Keep `README.md` in step with every user-visible change.
@@ -27,6 +29,7 @@ explain in plain Norwegian, and do the work rather than describing it.
 | `src/preview.rs` | Capture thread: MJPEG stream, decode, snapshot for Claude |
 | `src/vcam.rs` | Virtual camera (v4l2loopback) writer and its setup through pkexec |
 | `src/config.rs` | `~/.config/linkstudio/config.json` |
+| `src/debuglog.rs` | Debug log (Preferences → General → Troubleshooting): `debug!` macro, `~/.local/state/linkstudio/logs` |
 | `src/tray.rs` | Status icon (ksni) – menu and the `Command`s it sends |
 | `src/mcp.rs` | `linkstudio mcp`: MCP server that forwards to the app over D-Bus |
 | `src/i18n.rs`, `build.rs` | gettext catalogs embedded at build time |

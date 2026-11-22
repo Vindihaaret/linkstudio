@@ -15,6 +15,7 @@ use gtk::{gio, glib};
 use serde_json::Value;
 
 use super::{App, CURRENT};
+use crate::debuglog::debug;
 use crate::i18n::{tr, trf};
 
 const REPO: &str = "Vindihaaret/linkstudio";
@@ -201,14 +202,15 @@ impl App {
         if CHECKING.with(|c| c.replace(true)) {
             return;
         }
+        debug!("update: checking GitHub ({})", if manual { "asked for" } else { "monthly" });
         let weak = Rc::downgrade(self);
         fetch_latest(move |result| {
             CHECKING.with(|c| c.set(false));
+            debug!("update: {}", match &result { Ok(release) => format!("newest is {}", release.tag), Err(err) => format!("check failed: {err}") });
             let Some(app) = weak.upgrade() else { return };
             let release = match result {
                 Ok(release) => release,
                 Err(err) => {
-                    eprintln!("update check failed: {err}");
                     if manual {
                         app.update_message(tr("Could not check for updates"), &trf("Error: {}", &[&err]));
                     }
@@ -348,6 +350,7 @@ impl App {
         dialog.set_can_close(false);
         dialog.present(Some(&self.window));
 
+        debug!("update: installing {}", release.tag);
         let argv = ["sh", "-c", INSTALL_SCRIPT, "linkstudio-update", &release.tag, &release.version];
         let argv: Vec<&std::ffi::OsStr> = argv.iter().map(|a| a.as_ref()).collect();
         let flags = gio::SubprocessFlags::STDOUT_PIPE | gio::SubprocessFlags::STDERR_MERGE;
@@ -369,11 +372,13 @@ impl App {
                 if line.is_empty() {
                     continue;
                 }
+                debug!("update: {line}");
                 status.set_label(line);
                 buffer.insert(&mut buffer.end_iter(), &format!("{line}\n"));
                 log.scroll_to_iter(&mut buffer.end_iter(), 0.0, false, 0.0, 1.0);
             }
             let ok = process.wait_future().await.is_ok() && process.is_successful();
+            debug!("update: install finished, success = {ok}");
             spinner.set_spinning(false);
             spinner.set_visible(false);
             dialog.set_response_enabled("close", true);

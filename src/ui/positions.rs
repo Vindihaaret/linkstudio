@@ -1,6 +1,7 @@
 //! Saved positions: the tiles under the preview and their menu.
 
 use super::*;
+use crate::debuglog::debug;
 
 impl App {
     pub(super) fn rebuild_positions(self: &Rc<Self>) {
@@ -210,6 +211,7 @@ impl App {
     pub(super) fn goto_position(&self, index: usize) {
         let Some(cam) = self.cam() else { return };
         let Some(position) = self.config.borrow().positions.get(index).cloned() else { return };
+        debug!("positions: go to “{}” (pan {}, tilt {}, zoom {})", position.name, position.pan, position.tilt, position.zoom);
         self.resume_tracking.set(false);
         if self.tracking_on.get() && cam.set_tracking(false).is_ok() {
             self.tracking_on.set(false);

@@ -1,6 +1,7 @@
 //! About, Preferences, uninstalling and the shortcut list.
 
 use super::*;
+use crate::debuglog::debug;
 
 impl App {
     pub(super) fn show_about(&self) {
@@ -26,6 +27,73 @@ impl App {
             &["vrwallace https://github.com/vrwallace/Insta360-Link-1-and-2-Controller-for-Linux"],
         );
         about.present(Some(&self.window));
+    }
+
+    /// The "Troubleshooting" group in Preferences → General: the debug log.
+    fn debug_preferences_group(self: &Rc<Self>, dialog: &adw::PreferencesDialog) -> adw::PreferencesGroup {
+        let group = adw::PreferencesGroup::builder().title(tr("Troubleshooting")).build();
+        let switch = adw::SwitchRow::builder()
+            .title(tr("Debug log"))
+            .subtitle(trf(
+                "Writes what Link Studio does to a log file: camera commands, the stream, Claude's requests and errors. Never pictures or the camera's serial number. Useful when something goes wrong. Logs are deleted after {} days.",
+                &[&debuglog::KEEP_DAYS],
+            ))
+            .active(self.config.borrow().debug_log)
+            .build();
+        switch.add_prefix(&gtk::Image::from_icon_name("utilities-terminal-symbolic"));
+        group.add(&switch);
+        let weak = Rc::downgrade(self);
+        switch.connect_active_notify(move |row| {
+            let Some(app) = weak.upgrade() else { return };
+            let on = row.is_active();
+            if !on {
+                debug!("Debug log turned off");
+            }
+            app.config.borrow_mut().debug_log = on;
+            app.config.borrow().save();
+            debuglog::set_enabled(on);
+            if on {
+                debug!("Debug log turned on in Link Studio {}", env!("CARGO_PKG_VERSION"));
+                debuglog::cleanup();
+            }
+        });
+
+        let home = glib::home_dir();
+        let shown = match debuglog::log_dir().strip_prefix(&home) {
+            Ok(rest) => format!("~/{}", rest.display()),
+            Err(_) => debuglog::log_dir().display().to_string(),
+        };
+        let files = adw::ActionRow::builder().title(tr("Log files")).subtitle(shown).use_markup(false).build();
+        let open = gtk::Button::builder().label(tr("Open Folder")).valign(gtk::Align::Center).build();
+        let copy = gtk::Button::builder().label(tr("Copy Last Log")).valign(gtk::Align::Center).build();
+        files.add_suffix(&open);
+        files.add_suffix(&copy);
+        group.add(&files);
+        let weak = Rc::downgrade(self);
+        open.connect_clicked(move |_| {
+            let Some(app) = weak.upgrade() else { return };
+            let dir = debuglog::log_dir();
+            let _ = std::fs::create_dir_all(&dir);
+            gtk::FileLauncher::new(Some(&gio::File::for_path(&dir))).launch(
+                Some(&app.window),
+                None::<&gio::Cancellable>,
+                |_| {},
+            );
+        });
+        let prefs = dialog.clone();
+        copy.connect_clicked(move |_| {
+            let Some(path) = debuglog::newest() else {
+                return prefs.add_toast(adw::Toast::new(tr("No logs yet")));
+            };
+            let Ok(text) = std::fs::read_to_string(&path) else { return };
+            // The end of the file, as that is where the trouble usually is.
+            let start = text.len().saturating_sub(2_000_000);
+            let start = (start..text.len()).find(|&i| text.is_char_boundary(i)).unwrap_or(0);
+            prefs.clipboard().set_text(&text[start..]);
+            let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+            prefs.add_toast(adw::Toast::new(&trf("{} is copied", &[&name])));
+        });
+        group
     }
 
     pub(super) fn show_preferences(self: &Rc<Self>) -> adw::PreferencesDialog {
@@ -101,6 +169,7 @@ impl App {
         language_group.add(&language);
         page.add(&language_group);
         page.add(&self.update_preferences_group());
+        page.add(&self.debug_preferences_group(&dialog));
 
         // Uninstalling lives at the bottom here, not in the main menu, so it is a deliberate choice.
         let removal = adw::PreferencesGroup::new();

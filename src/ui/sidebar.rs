@@ -2,6 +2,7 @@
 //! and camera pages.
 
 use super::*;
+use crate::debuglog::debug;
 
 impl App {
     pub(super) fn build_sidebar(self: &Rc<Self>, cam: &Rc<Camera>) {
@@ -569,6 +570,7 @@ impl App {
 
     /// Turns the virtual camera on or off, from the Effects page or the status icon.
     pub(super) fn set_virtual_camera(self: &Rc<Self>, on: bool) {
+        debug!("virtual camera: {}", if on { "on" } else { "off" });
         self.config.borrow_mut().virtual_camera = on;
         self.config.borrow().save();
         if let Some(rows) = self.virtual_rows.borrow().as_ref() {
@@ -733,6 +735,7 @@ impl App {
     }
 
     pub(super) fn apply_profile(self: &Rc<Self>, profile: &Profile) {
+        debug!("profiles: apply “{}”", profile.name);
         let Some(cam) = self.cam() else { return };
         let values: Vec<(u32, i32)> = profile
             .controls

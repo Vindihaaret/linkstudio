@@ -1,6 +1,7 @@
 //! Gimbal moves, zoom, AI tracking and privacy mode.
 
 use super::*;
+use crate::debuglog::debug;
 
 impl App {
     /// Moves the gimbal one step. `resync` starts from where the gimbal really
@@ -51,6 +52,7 @@ impl App {
     }
 
     pub(super) fn set_tracking(self: &Rc<Self>, on: bool) {
+        debug!("tracking: turn {}", if on { "on" } else { "off" });
         let Some(cam) = self.cam() else { return };
         if on && self.privacy.is_active() {
             self.leave_privacy();
@@ -103,6 +105,7 @@ impl App {
     }
 
     pub(super) fn set_privacy(&self, on: bool) {
+        debug!("privacy mode: {}", if on { "on" } else { "off" });
         let Some(cam) = self.cam() else { return };
         if on {
             let (pan, tilt) = gimbal_position(&cam).unwrap_or((0, 0));

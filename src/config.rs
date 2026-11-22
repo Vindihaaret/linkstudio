@@ -68,6 +68,8 @@ pub struct Config {
     pub last_update_check: i64,
     /// A release tag the user chose to skip.
     pub skipped_version: Option<String>,
+    /// Write what the app does to a log file (see `debuglog`).
+    pub debug_log: bool,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -103,6 +105,7 @@ impl Default for Config {
             auto_update_check: true,
             last_update_check: 0,
             skipped_version: None,
+            debug_log: false,
         }
     }
 }
@@ -112,10 +115,24 @@ fn config_path() -> PathBuf {
 }
 
 impl Config {
+    /// Only the debug log switch, for `debuglog` in every process.
+    pub fn read_debug_log() -> bool {
+        #[derive(Deserialize)]
+        struct Only {
+            #[serde(default)]
+            debug_log: bool,
+        }
+        fs::read_to_string(config_path())
+            .ok()
+            .and_then(|text| serde_json::from_str::<Only>(&text).ok())
+            .is_some_and(|only| only.debug_log)
+    }
+
     pub fn load() -> Self {
         let path = config_path();
         let mut config: Config = match fs::read_to_string(&path) {
-            Ok(text) => serde_json::from_str(&text).unwrap_or_else(|_| {
+            Ok(text) => serde_json::from_str(&text).unwrap_or_else(|err| {
+                crate::debuglog::debug!("config: {} is damaged ({err}), starting with defaults", path.display());
                 // Keep a damaged file instead of overwriting it with defaults,
                 // so saved positions and profiles can still be recovered.
                 let _ = fs::rename(&path, path.with_extension("json.damaged"));

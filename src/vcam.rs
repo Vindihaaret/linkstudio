@@ -35,6 +35,7 @@ pub fn is_set_up() -> bool {
     Path::new(MODPROBE_CONF).exists()
 }
 
+#[derive(Debug)]
 pub enum SetupError {
     /// The password dialog was dismissed.
     Cancelled,
@@ -52,6 +53,7 @@ pub fn run_privileged(
 ) {
     const PKEXEC_DISMISSED: i32 = 126;
     let script = if remove { REMOVE_SCRIPT } else { SETUP_SCRIPT };
+    crate::debuglog::debug!("vcam: $ pkexec sh -c <{} script>", if remove { "removal" } else { "setup" });
     let flags = gio::SubprocessFlags::STDOUT_PIPE | gio::SubprocessFlags::STDERR_MERGE;
     let argv: [&std::ffi::OsStr; 4] = ["pkexec".as_ref(), "sh".as_ref(), "-c".as_ref(), script.as_ref()];
     let process = match gio::Subprocess::newv(&argv, flags) {
@@ -75,6 +77,12 @@ pub fn run_privileged(
             Ok(()) if process.exit_status() == PKEXEC_DISMISSED => Err(SetupError::Cancelled),
             Ok(()) => Err(SetupError::Failed(output.trim().to_owned())),
         };
+        crate::debuglog::debug!(
+            "vcam: → exit {} ({:?}){}",
+            process.exit_status(),
+            outcome.as_ref().err(),
+            crate::debuglog::tail(&output)
+        );
         done(outcome);
     });
 }

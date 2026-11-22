@@ -1,6 +1,7 @@
 //! The camera stream: preview, virtual camera, retries and photos.
 
 use super::*;
+use crate::debuglog::debug;
 
 impl App {
     /// The preview runs only while it is switched on and the window is shown.
@@ -161,6 +162,7 @@ impl App {
     /// The camera is streaming again: turn back on tracking it dropped when
     /// the previous stream stopped. This also runs when no preview is shown.
     pub(super) fn stream_started(self: &Rc<Self>) {
+        debug!("stream: first frame, the camera is awake");
         self.stream_live.set(true);
         if self.stream_waiting.borrow_mut().take().is_some() {
             self.show_preview_page();
@@ -202,6 +204,7 @@ impl App {
     }
 
     pub(super) fn preview_failed(self: &Rc<Self>, message: &str, retry: bool) {
+        debug!("stream: failed: {message} (retry {retry})");
         let had_virtual = self.stream_has_virtual.get();
         self.stop_preview();
         // Moves that waited for our stream to wake the camera: when another

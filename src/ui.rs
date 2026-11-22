@@ -13,6 +13,7 @@ use gtk::{gdk, gio, glib};
 
 use crate::camera::{self, cid, Camera, CtrlInfo, CtrlKind, Mode, EXPOSURE_UNITS_PER_EV};
 use crate::config::{Appearance, Config, Position, Profile};
+use crate::debuglog::{self, debug};
 use crate::i18n::{self, n_, tr, trf};
 use crate::preview::{self, Event, Frame, Preview};
 use crate::{tray, vcam};
@@ -211,6 +212,7 @@ pub fn start_tray(application: &adw::Application) {
     let application = application.downgrade();
     glib::spawn_future_local(async move {
         while let Ok(command) = rx.recv().await {
+            debug!("tray: {command:?}");
             let Some(application) = application.upgrade() else { break };
             let app = CURRENT.with(|current| current.borrow().upgrade());
             match (command, app) {
@@ -259,6 +261,7 @@ pub fn watch_screen_lock(application: &adw::Application) {
             gio::DBusSignalFlags::NONE,
             |_, _, _, _, _, parameters| {
                 let Some((locked,)) = parameters.get::<(bool,)>() else { return };
+                debug!("screen lock: locked = {locked}");
                 if let Some(app) = CURRENT.with(|current| current.borrow().upgrade()) {
                     app.screen_locked(locked);
                 }
@@ -1499,6 +1502,7 @@ impl App {
         let Some(info) = camera::find_devices().into_iter().next() else {
             return;
         };
+        debug!("connect: found {} ({})", info.path.display(), info.name);
         let cam = match Camera::open(info) {
             Ok(cam) => Rc::new(cam),
             Err(err) => {
@@ -1516,6 +1520,12 @@ impl App {
             self.zoom.set_range(zoom.min as f64, zoom.max as f64);
         }
         self.rebuild_positions();
+        if debuglog::enabled() {
+            // Only the firmware: the serial number is never written to the log.
+            let firmware = cam.identity().firmware.unwrap_or_else(|| "unknown".into());
+            let config = self.config.borrow();
+            debug!("connect: firmware {firmware}, privacy {}, preview autostart {}", config.privacy, config.preview_autostart);
+        }
         self.title.set_subtitle(&trf("{} · connected", &[&cam.info.name]));
         *self.camera.borrow_mut() = Some(cam.clone());
         self.build_sidebar(&cam);
@@ -1546,6 +1556,7 @@ impl App {
     }
 
     fn disconnect(self: &Rc<Self>) {
+        debug!("connect: the camera went away");
         self.cancel_stream_retry();
         self.stream_waiting.borrow_mut().take();
         self.stop_preview();

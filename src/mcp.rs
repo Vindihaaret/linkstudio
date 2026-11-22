@@ -10,6 +10,7 @@ use gtk::glib::prelude::*;
 use gtk::{gio, glib};
 use serde_json::{json, Value};
 
+use crate::debuglog::debug;
 use crate::ui::claude::{INTERFACE, OBJECT_PATH};
 use crate::APP_ID;
 
@@ -95,6 +96,7 @@ fn ensure_running(connection: &gio::DBusConnection) -> Result<(), String> {
         return Ok(());
     }
     let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+    debug!("mcp: Link Studio is not running, starting it");
     Command::new(exe)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
@@ -140,7 +142,11 @@ fn call_app(method: &str, arguments: &Value) -> Result<Value, String> {
             _ => break,
         }
     }
-    let reply = reply.map_err(|e| format!("Could not reach Link Studio: {}", e.message()))?;
+    let reply = reply.map_err(|e| {
+        debug!("mcp: {method}: could not reach Link Studio: {}", e.message());
+        format!("Could not reach Link Studio: {}", e.message())
+    })?;
+    debug!("mcp: {method} answered");
     let (json,) = reply.get::<(String,)>().ok_or("Unexpected reply from Link Studio")?;
     serde_json::from_str(&json).map_err(|e| e.to_string())
 }

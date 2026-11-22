@@ -259,6 +259,14 @@ Tools: `get_status`, `take_snapshot`, `set_image_settings`, `reset_image_setting
 * **AI tracking does not start right away** – the gimbal needs a couple of seconds to wake up when the
   camera starts streaming; Link Studio retries until the camera confirms tracking.
 
+**Debug log.** For anything else, turn on **Preferences → General → Troubleshooting → Debug log**. Link
+Studio – the window, the status icon and the Claude connection (`linkstudio mcp`) – then writes what it
+does to `~/.local/state/linkstudio/logs/linkstudio-<date>.log`: camera commands and their results, the
+stream starting and stopping, Claude's requests and whether they were allowed, the virtual camera setup,
+update checks and unexpected errors. Pictures and the camera's serial number are never written. The
+folder is only readable by you, and logs are deleted after 14 days. *Open Folder* and *Copy Last Log* next
+to the switch make it easy to attach the log to an issue.
+
 ## Files
 
 | Path | Contents |
@@ -267,6 +275,7 @@ Tools: `get_status`, `take_snapshot`, `set_image_settings`, `reset_image_setting
 | `~/.config/linkstudio/config.json` | Settings, saved positions and profiles (a file that cannot be read is kept as `config.json.damaged`) |
 | `~/.config/autostart/io.github.linkstudio.LinkStudio.desktop` | Start at login (when turned on) |
 | `~/Pictures/Link Studio/` | Photos |
+| `~/.local/state/linkstudio/logs/` | Debug log (when turned on) |
 | `/etc/modprobe.d/linkstudio-v4l2loopback.conf`, `/etc/modules-load.d/linkstudio-v4l2loopback.conf` | Virtual camera setup |
 
 ## Translations

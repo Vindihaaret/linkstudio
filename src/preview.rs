@@ -144,7 +144,16 @@ impl Preview {
         let stop = Arc::new(AtomicBool::new(false));
         let thread_stop = stop.clone();
         let thread = std::thread::spawn(move || {
-            if let Err(err) = capture(&options, &thread_stop, &tx) {
+            crate::debuglog::debug!(
+                "stream: start {} at {}x{}, virtual camera {:?}",
+                options.device.display(),
+                options.size.0,
+                options.size.1,
+                options.virtual_camera
+            );
+            let result = capture(&options, &thread_stop, &tx);
+            crate::debuglog::debug!("stream: stopped ({result:?})");
+            if let Err(err) = result {
                 // Never block here: the UI thread may be joining this thread.
                 let retry = matches!(err.raw_os_error(), Some(libc::EBUSY) | Some(libc::ETIMEDOUT));
                 let _ = tx.force_send(Event::Error { message: describe(&err), retry });
@@ -254,12 +263,14 @@ fn capture(options: &Options, stop: &AtomicBool, tx: &async_channel::Sender<Even
         match vcam::Writer::open(path, fmt.fmt.pix.width, fmt.fmt.pix.height) {
             Ok(writer) => Some(writer),
             Err(err) => {
+                crate::debuglog::debug!("stream: virtual camera {} failed: {err}", path.display());
                 let _ = tx.force_send(Event::VirtualCameraError(err.to_string()));
                 None
             }
         }
     });
 
+    crate::debuglog::debug!("stream: camera delivers {}x{}", fmt.fmt.pix.width, fmt.fmt.pix.height);
     let mut kind = BUF_TYPE_VIDEO_CAPTURE as i32;
     ioctl(fd, VIDIOC_STREAMON, &mut kind)?;
 

@@ -10,6 +10,7 @@ use ksni::{MenuItem, ToolTip};
 use crate::i18n::tr;
 use crate::APP_ID;
 
+#[derive(Debug)]
 pub enum Command {
     Show,
     ToggleVirtualCamera,
